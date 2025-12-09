@@ -1,3 +1,0 @@
-base:
-  '*StateName*':
-   - prueba
