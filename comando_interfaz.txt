@@ -1,0 +1,1 @@
+IFACE=$(ls /sys/class/net | grep -v lo | head -n 1) ; MAC=$(cat /sys/class/net/$IFACE/address) ; echo "SUBSYSTEM==\"net\", ACTION==\"add\", ATTR{address}==\"$MAC\", NAME=\"eth0\"" | sudo tee /etc/udev/rules.d/10-network.rules
