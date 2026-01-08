@@ -1,3 +1,3 @@
 base:
-  '*StateName*':
-   - prueba
+  '*Minion1*':
+   - ah-webserver
