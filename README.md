@@ -47,4 +47,4 @@ Nos gustaría que este proyecto fuese útil para:
 
 Este proyecto se distribuye bajo licencia **Apache 2.0**, para más detalles lee el archivo "LICENSE file" seguido de un resumen de licencias para módulos externos .
 
-Consulta el archivo `LICENSE` para más información.
+Consulta el archivo [LICENSE](LICENSE) para más información.
