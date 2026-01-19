@@ -67,8 +67,3 @@ secure_salt_pki:
 reiniar-maquinaweb:
   cmd.run:
     - name: sleep 20 && reboot
-
-# Reiniciamos
-reiniar-maquinaweb:
-  cmd.run:
-    - name: sleep 20 && reboot
