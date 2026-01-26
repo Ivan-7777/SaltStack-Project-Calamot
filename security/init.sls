@@ -62,8 +62,3 @@ secure_salt_pki:
     - user: root
     - group: root
     - mode: 700
-
-# Reiniciamos
-reiniar-maquinaweb:
-  cmd.run:
-    - name: sleep 20 && reboot
