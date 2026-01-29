@@ -16,7 +16,7 @@ Permite generar certificados de forma controlada y centralizada.
 Este estado se aplica en máquinas destinadas exclusivamente a actuar como CA.
 
 ## Sistemas afectados
-- Servidores CA
+- Servidores CA.
 
 ## Notas
 Los archivos privados se protegen mediante permisos restrictivos para evitar accesos no autorizados.
