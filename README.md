@@ -43,6 +43,21 @@ Nos gustaría que este proyecto fuese útil para:
 
 ---
 
+## Documentación de referencia
+
+Este proyecto sigue las buenas prácticas recomendadas en la documentación oficial de SaltStack:
+
+- States – Parte 1 a 4:
+  - Introducción a los states
+  - Requisitos y dependencias
+  - Organización y reutilización
+  - Uso del top.sls y targeting
+
+Estas guías han servido como base para el diseño modular y reutilizable de los estados del proyecto.
+
+
+---
+
 ## Licencia
 
 Este proyecto se distribuye bajo licencia **Apache 2.0**, para más detalles lee el archivo "LICENSE file" seguido de un resumen de licencias para módulos externos .
