@@ -54,7 +54,6 @@ restart_salt_minion:
     - watch:
       - file: salt_minion_hardening
 
-
 # Proteccion directorios criticos
 secure_salt_pki:
   file.directory:
@@ -62,3 +61,21 @@ secure_salt_pki:
     - user: root
     - group: root
     - mode: 700
+
+# Auditoria de logs - permisos
+secure_auth_log:
+  file.managed:
+    - name: /var/log/auth.log
+    - user: root
+    - group: adm
+    - mode: 640
+    - replace: False
+
+secure_syslog:
+  file.managed:
+    - name: /var/log/syslog
+    - user: root
+    - group: adm
+    - mode: 640
+    - replace: False
+
