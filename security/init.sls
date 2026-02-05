@@ -79,3 +79,18 @@ secure_syslog:
     - mode: 640
     - replace: False
 
+# Persistencia de logs (journald)
+journald_persistence:
+  file.managed:
+    - name: /etc/systemd/journald.conf
+    - source: salt://security/files/journald.conf
+    - user: root
+    - group: root
+    - mode: 644
+
+restart_journald:
+  service.running:
+    - name: systemd-journald
+    - watch:
+      - file: journald_persistence
+
