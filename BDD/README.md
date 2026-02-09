@@ -6,7 +6,6 @@ Este estado se encarga de la instalación, configuración y securización de los
 * Instalación del motor de base de datos (PostgreSQL/MySQL).
 * Configuración de archivos `conf` (optimización de memoria y conexiones).
 * Creación de usuarios y bases de datos iniciales.
-* Gestión de backups automáticos.
 
 ## Dependencias
 * Requiere acceso al puerto correspondiente (ej. 5432) gestionado por el estado `firewall`.
