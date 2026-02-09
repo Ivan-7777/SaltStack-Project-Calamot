@@ -1,4 +1,4 @@
-# SaltStack Project – Calamot
+# SaltStack Project – Calamot 🧂
 
 Este proyecto es un **laboratorio y repositorio de prácticas con SaltStack**, orientado a la automatización y gestión de sistemas Linux mediante infraestructuras.
 
@@ -22,14 +22,16 @@ No está pensado como un producto final cerrado, sino como un **entorno de apren
 
 ## Enfoque y Estructura
 
-Este repositorio se centra en la gestión declarativa del sistema y la separación clara entre configuración y ejecución. Los estados incluidos son:
+Este repositorio se centra en la gestión declarativa del sistema y la separación clara entre configuración y ejecución. La infraestructura se divide en los siguientes módulos:
 
-* **Master:** Configuración del cerebro de la infraestructura y gestión de llaves.
-* **BDD (Base de Datos):** Despliegue y optimización de motores de datos.
-* **CA (Certificaciones):** Automatización de certificados SSL/TLS internos.
-* **Firewall:** Definición de reglas de red y seguridad perimetral.
-* **Seguridad:** Hardening de Kernel (sysctl), SSH, protección del Minion y auditoría de logs.
-* **Wireguard:** Configuración de túneles VPN seguros.
+| Módulo | Descripción |
+| :--- | :--- |
+| **Master** | Configuración del cerebro de la infraestructura y gestión de llaves. |
+| **BDD** | Despliegue, configuración y optimización de motores de bases de datos. |
+| **CA** | Servidor de Certificaciones Automáticas para gestión de SSL/TLS. |
+| **Firewall** | Definición de reglas de red (iptables/nftables) y seguridad perimetral. |
+| **Seguridad** | Hardening de Kernel (sysctl), SSH, protección del Minion y auditoría de logs. |
+| **Wireguard** | Implementación de túneles VPN seguros para conectividad entre nodos. |
 
 ---
 
