@@ -1,39 +1,65 @@
-# SaltStack Project – Calamot 
+# SaltStack Project – Calamot 🧂
 
-Este proyecto es un **laboratorio y repositorio de prácticas con SaltStack**, orientado a la automatización y gestión de sistemas Linux mediante infraestructura como código (IaC).
+Este proyecto es un **laboratorio y repositorio de prácticas con SaltStack**, orientado a la automatización y gestión de sistemas Linux mediante infraestructuras.
 
-> **Nota:** Este es un entorno de aprendizaje dinámico diseñado para comprender la orquestación centralizada desde un Salt Master hacia sus Minions.
-
----
-
-## Estructura de la Infraestructura
-
-El repositorio está organizado en estados (`states`) modulares que pueden aplicarse de forma independiente o conjunta:
-
-| Directorio | Descripción |
-| :--- | :--- |
-| `master/` | Configuración del Salt Master y orquestación global. |
-| `bdd/` | Despliegue y optimización de bases de datos. |
-| `ca/` | Autoridad de Certificación interna y gestión de SSL/TLS. |
-| `firewall/` | Gestión de políticas de red y seguridad perimetral. |
-| `seguridad/` | Hardening de Kernel, SSH y auditoría de logs. |
-| `wireguard/` | Despliegue de VPN punto a punto segura. |
+El objetivo principal es **aprender, documentar y aplicar SaltStack en escenarios reales**, utilizando estados (`.sls`) para definir configuraciones reproducibles, seguras y controladas desde un Salt Master hacia uno o varios minions.
 
 ---
 
-## Objetivos y Enfoque
+## Objetivo del proyecto
 
-El proyecto aplica las mejores prácticas de SaltStack para:
-* **Gestión Declarativa:** Definir el "qué" y no el "cómo".
-* **Idempotencia:** Asegurar que los estados puedan reaplicarse sin efectos secundarios negativos.
-* **Seguridad por Defecto:** Aplicar hardening desde el despliegue inicial.
+El proyecto nace con la intención de:
+
+- **Comprender** el funcionamiento de SaltStack en entornos reales.
+- **Automatizar** tareas de administración de sistemas.
+- **Centralizar** configuraciones mediante estados salt.
+- **Aplicar** buenas prácticas de infraestructura.
+- **Servir como base de referencia** para futuros proyectos o ampliaciones posibles.
+
+No está pensado como un producto final cerrado, sino como un **entorno de aprendizaje y evolución**, donde se pueden ir incorporando nuevos estados, servicios y configuraciones.
 
 ---
 
-## Uso Rápido
+## Enfoque y Estructura
 
-Para aplicar la configuración completa de seguridad y red a todos los nodos:
+Este repositorio se centra en la gestión declarativa del sistema y la separación clara entre configuración y ejecución. Los estados incluidos son:
 
-```bash
-# Sincronizar estados
-salt '*' state.apply seguridad,firewall
+* **Master:** Configuración del cerebro de la infraestructura y gestión de llaves.
+* **BDD (Base de Datos):** Despliegue y optimización de motores de datos.
+* **CA (Certificaciones):** Automatización de certificados SSL/TLS internos.
+* **Firewall:** Definición de reglas de red y seguridad perimetral.
+* **Seguridad:** Hardening de Kernel (sysctl), SSH, protección del Minion y auditoría de logs.
+* **Wireguard:** Configuración de túneles VPN seguros.
+
+---
+
+## Público objetivo
+
+Nos gustaría que este proyecto fuese útil para:
+
+- Estudiantes de sistemas o ciberseguridad.
+- Personas que están aprendiendo SaltStack.
+- Administradores que quieran ejemplos claros y funcionales.
+- Laboratorios personales o académicos.
+
+---
+
+## Documentación de referencia
+
+Este proyecto sigue las buenas prácticas recomendadas en la documentación oficial de SaltStack:
+
+- **States – Parte 1 a 4:**
+  - Introducción a los states.
+  - Requisitos y dependencias.
+  - Organización y reutilización.
+  - Uso del top.sls y targeting.
+
+Estas guías han servido como base para el diseño modular y reutilizable de los estados del proyecto.
+
+---
+
+## Licencia
+
+Este proyecto se distribuye bajo licencia **Apache 2.0**, para más detalles lee el archivo "LICENSE file" seguido de un resumen de licencias para módulos externos .
+
+Consulta el archivo [LICENSE](LICENSE) para más información.
