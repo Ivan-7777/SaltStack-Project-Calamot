@@ -1,4 +1,4 @@
-# SaltStack Project – Calamot 🧂
+# SaltStack Project – Calamot
 
 Este proyecto es un **laboratorio y repositorio de prácticas con SaltStack**, orientado a la automatización y gestión de sistemas Linux mediante infraestructuras.
 
