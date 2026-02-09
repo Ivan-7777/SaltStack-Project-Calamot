@@ -1,4 +1,4 @@
-# SaltStack Project – Calamot 🧂
+# SaltStack Project – Calamot 
 
 Este proyecto es un **laboratorio y repositorio de prácticas con SaltStack**, orientado a la automatización y gestión de sistemas Linux mediante infraestructura como código (IaC).
 
@@ -6,7 +6,7 @@ Este proyecto es un **laboratorio y repositorio de prácticas con SaltStack**, o
 
 ---
 
-## 🏗️ Estructura de la Infraestructura
+## Estructura de la Infraestructura
 
 El repositorio está organizado en estados (`states`) modulares que pueden aplicarse de forma independiente o conjunta:
 
@@ -21,7 +21,7 @@ El repositorio está organizado en estados (`states`) modulares que pueden aplic
 
 ---
 
-## 🎯 Objetivos y Enfoque
+## Objetivos y Enfoque
 
 El proyecto aplica las mejores prácticas de SaltStack para:
 * **Gestión Declarativa:** Definir el "qué" y no el "cómo".
@@ -30,7 +30,7 @@ El proyecto aplica las mejores prácticas de SaltStack para:
 
 ---
 
-## 🚀 Uso Rápido
+## Uso Rápido
 
 Para aplicar la configuración completa de seguridad y red a todos los nodos:
 
