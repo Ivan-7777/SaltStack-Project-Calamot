@@ -1,0 +1,20 @@
+# Zona interna para la red local
+zone "server" IN {
+    type master;
+    file "/etc/bind/db.server";
+    allow-transfer { none; };
+};
+
+# Zona inversa para LAN (192.168.1.0/24)
+zone "1.168.192.in-addr.arpa" IN {
+    type master;
+    file "/etc/bind/db.1.168.192";
+    allow-transfer { none; };
+};
+
+# Zona inversa para DMZ (192.168.2.0/24)
+zone "2.168.192.in-addr.arpa" IN {
+    type master;
+    file "/etc/bind/db.2.168.192";
+    allow-transfer { none; };
+};

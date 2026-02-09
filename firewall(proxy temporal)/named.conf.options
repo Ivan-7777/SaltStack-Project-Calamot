@@ -1,0 +1,21 @@
+options {
+    directory "/var/cache/bind";
+
+    # Permitir consultas desde LAN y DMZ
+    allow-query { localhost; 192.168.1.0/24; 192.168.2.0/24; };
+    
+    # Permitir recursión desde redes internas
+    allow-recursion { localhost; 192.168.1.0/24; 192.168.2.0/24; };
+    
+    # Forwarder a Google DNS
+    forwarders {
+        8.8.8.8;
+        8.8.4.4;
+    };
+    
+    # Usar forwarder para consultas que no están en nuestras zonas
+    forward first;
+
+    // dnssec-validation auto;
+    listen-on-v6 { any; };
+};
