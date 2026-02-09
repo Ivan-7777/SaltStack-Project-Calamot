@@ -1,20 +1,26 @@
-# Estado: webserver
+# State: Web-Server (Servidor de Aplicaciones y Hosting)
 
-## Descripción
-Este estado despliega y configura un servidor web de forma automatizada mediante SaltStack.
+Este módulo gestiona el nodo dedicado a servicios web del laboratorio. Su función principal es proporcionar un entorno de hosting robusto, automatizado y con una identidad de red fija.
 
-Está pensado para sistemas que actúan como servidores web dentro de una infraestructura.
+## Propósito del Estado
 
-## ¿Qué hace este estado?
-- Instala el servidor web
-- Configura los archivos necesarios del servicio
-- Asegura que el servicio esté habilitado y en ejecución
+El objetivo de este estado es transformar un minion en un **Servidor Web listo para producción**, asegurando que el despliegue del contenido, la conectividad y las herramientas de administración estén disponibles desde el primer minuto.
 
-## ¿Cuándo se aplica?
-Se aplica a máquinas cuyo rol principal es servir contenido web.
+### Áreas de Gestión
 
-## Sistemas afectados
-- Servidores web.
+* **Servicio de Hosting:** Despliega el servidor **Apache2** junto con la estructura de directorios necesaria para alojar la página principal del proyecto.
+* **Identidad de Red Estática:** Implementa mecanismos de bajo nivel (udev y networking) para garantizar que el servidor siempre mantenga el nombre de interfaz `eth0` y una IP fija, facilitando su localización por otros servicios como el DHCP o el Firewall.
+* **Acceso Seguro:** Automatiza la creación de credenciales SSH (`ed25519`) para permitir una gestión remota segura y directa por parte del administrador.
+* **Herramientas de Autogestión:** Proporciona scripts de ayuda (`autohosting`) que simplifican las tareas comunes de creación y eliminación de sitios web, optimizando el flujo de trabajo.
 
-## Notas
-Este estado puede combinarse con el estado de seguridad para reforzar la protección del sistema.
+
+
+## Consideraciones de Despliegue
+
+Para garantizar que la configuración de red sea persistente y que el sistema reconozca los cambios en las interfaces físicas, el estado realiza un **reinicio programado** al finalizar su ejecución. Esto asegura que el servidor arranque en un estado limpio y con todas las reglas de red aplicadas correctamente.
+
+## Uso
+
+```bash
+# Aplicar la configuración completa del servidor web:
+salt 'web-server' state.apply web-server
