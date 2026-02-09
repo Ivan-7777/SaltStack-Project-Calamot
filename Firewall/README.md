@@ -1,29 +1,11 @@
-# Firewall
+# State: Firewall
 
-## Descripción
+Este estado gestiona las reglas de red (iptables/nftables/ufw) en cada minion para garantizar el principio de mínimo privilegio.
 
-Este componente del proyecto se encarga de la **seguridad perimetral de la infraestructura**, actuando como primera línea de defensa frente a accesos no autorizados.
+## Contenido
+* **Políticas Globales:** Bloqueo de tráfico entrante por defecto.
+* **Reglas Específicas:** Apertura de puertos para servicios (HTTP, SSH, BDD, Wireguard).
+* **Persistencia:** Asegura que las reglas se mantengan tras un reinicio.
 
-El firewall controla y filtra el tráfico de red entrante, saliente y reenviado, permitiendo únicamente las comunicaciones necesarias para el correcto funcionamiento del sistema.
-
----
-
-## Objetivos
-
-- Reducir la superficie de ataque del sistema.
-- Controlar el tráfico entre interfaces y redes.
-- Permitir únicamente los servicios estrictamente necesarios.
-- Centralizar y automatizar la configuración mediante SaltStack.
-
----
-
-## Enfoque de seguridad
-
-El firewall está diseñado siguiendo un enfoque restrictivo:
-- Todo el tráfico se bloquea por defecto.
-- Solo se permiten reglas explícitas.
-- Se controla el forwarding de paquetes.
-- Se evita la exposición innecesaria de servicios.
-
-La configuración se gestiona de forma automatizada para asegurar coherencia y evitar errores manuales.
-
+## Variables
+Las reglas se definen dinámicamente consultando los `pillars` de cada nodo.
