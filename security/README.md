@@ -1,24 +1,9 @@
-# Estado: security
+# State: Seguridad (Hardening)
 
-## Descripción
-Este estado aplica medidas básicas de seguridad (hardening) sobre los minions gestionados por SaltStack.
+Implementación de medidas de seguridad adicionales para robustecer el sistema operativo.
 
-El objetivo es reducir la superficie de ataque del sistema sin interferir con la automatización ni los servicios desplegados.
-
-## ¿Qué hace este estado?
-- Configura parámetros de seguridad del kernel
-- Endurece el acceso SSH
-- Ajusta permisos en directorios sensibles
-- Controla el comportamiento de servicios críticos
-- Controla acceso con permisos a los logs críticos y la auditoría de estos
-
-## ¿Cuándo se aplica?
-Este estado se aplica **después** de configurar el rol principal del sistema (web server, CA, etc.), como una capa adicional de seguridad.
-
-## Sistemas afectados
-- Minions Linux gestionados por SaltStack.
-
-## Notas
-Este estado está diseñado para ser reutilizable y no depende de servicios específicos.
-
-
+## Medidas Incluidas
+* Configuración de **Fail2Ban** para mitigar ataques de fuerza bruta.
+* Hardening de **SSH** (desactivar login de root, forzar uso de llaves).
+* Auditoría de logs y chequeo de permisos en archivos críticos.
+* Instalación de parches de seguridad críticos de forma automática.
