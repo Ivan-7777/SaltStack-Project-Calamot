@@ -10,6 +10,7 @@ El objetivo es reducir la superficie de ataque del sistema sin interferir con la
 - Endurece el acceso SSH
 - Ajusta permisos en directorios sensibles
 - Controla el comportamiento de servicios críticos
+- Controla acceso a los logs críticos 
 
 ## ¿Cuándo se aplica?
 Este estado se aplica **después** de configurar el rol principal del sistema (web server, CA, etc.), como una capa adicional de seguridad.
@@ -19,3 +20,4 @@ Este estado se aplica **después** de configurar el rol principal del sistema (w
 
 ## Notas
 Este estado está diseñado para ser reutilizable y no depende de servicios específicos.
+
