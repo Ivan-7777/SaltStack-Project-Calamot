@@ -1,35 +1,12 @@
-# BDD – Base de Datos
+# State: BDD (Database)
 
-## Descripción
+Este estado se encarga de la instalación, configuración y securización de los servidores de Bases de Datos.
 
-Este componente del proyecto corresponde a la **Base de Datos (BDD)** de la infraestructura.  
+## Funcionalidades
+* Instalación del motor de base de datos (PostgreSQL/MySQL).
+* Configuración de archivos `conf` (optimización de memoria y conexiones).
+* Creación de usuarios y bases de datos iniciales.
+* Gestión de backups automáticos.
 
-La base de datos forma parte de una infraestructura automatizada y gestionada mediante **SaltStack**, lo que permite una configuración coherente y reproducible.
-
----
-
-## Objetivos
-
-- Proporcionar almacenamiento persistente para aplicaciones y servicios.
-- Garantizar la integridad y consistencia de los datos.
-- Facilitar la automatización de la configuración.
-
----
-
-## Enfoque de seguridad
-
-La Base de Datos se despliega siguiendo buenas prácticas de seguridad:
-
-- Acceso restringido únicamente a los servicios autorizados.
-- Comunicación segura dentro de la red interna o VPN.
-- Protección del sistema mediante estados de seguridad comunes.
-- Separación clara de roles dentro de la infraestructura.
-
-No se expone directamente a redes públicas, minimizando la superficie de ataque.
-
----
-
-## Notas finales
-
-Este componente forma parte de una infraestructura mayor, donde cada nodo cumple una función específica.  
-La Base de Datos está diseñada para ser **segura, automatizada y fácilmente mantenible**, alineada con los objetivos globales del proyecto.
+## Dependencias
+* Requiere acceso al puerto correspondiente (ej. 5432) gestionado por el estado `firewall`.
