@@ -10,7 +10,6 @@ El objetivo de este estado es transformar un minion en un **Servidor Web listo p
 
 * **Servicio de Hosting:** Despliega el servidor **Apache2** junto con la estructura de directorios necesaria para alojar la página principal del proyecto.
 * **Identidad de Red Estática:** Implementa mecanismos de bajo nivel (udev y networking) para garantizar que el servidor siempre mantenga el nombre de interfaz `eth0` y una IP fija, facilitando su localización por otros servicios como el DHCP o el Firewall.
-* **Acceso Seguro:** Automatiza la creación de credenciales SSH (`ed25519`) para permitir una gestión remota segura y directa por parte del administrador.
 * **Herramientas de Autogestión:** Proporciona scripts de ayuda (`autohosting`) que simplifican las tareas comunes de creación y eliminación de sitios web, optimizando el flujo de trabajo.
 
 
