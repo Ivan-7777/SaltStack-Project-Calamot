@@ -1,0 +1,11 @@
+# Loopback
+auto lo
+iface lo inet loopback
+
+# DMZ - Conectada al firewall
+auto enp0s3
+iface enp0s3 inet static
+    address 192.168.2.10
+    netmask 255.255.255.0
+    gateway 192.168.2.1
+    dns-nameservers 192.168.2.1
