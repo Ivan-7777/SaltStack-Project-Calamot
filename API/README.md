@@ -26,4 +26,5 @@ sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
   -keyout /etc/salt/pki/api/salt_api.key \
   -out /etc/salt/pki/api/salt_api.crt \
   -subj "/C=ES/ST=Lab/L=Gava/O=SaltProject/CN=saltmaster"
-````
+```
+
