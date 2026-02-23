@@ -1,7 +1,7 @@
-Prueba de fuego: Ejecuta el script tal cual está (python3 seguridad_api.py). Debería darte un "True" pero desde Python.
+Al ejecutar el script con permisos puestos (python3 api.py) debería decirnos que se está conectando por localhost, que nos ha dado un token con exito (el valor ese largo) y darnos un "True" pero desde Python. 
 
-Aplicar seguridad: Una vez veas que el ping funciona, descomenta la parte de state.apply.
+Aplicar seguridad: Una vez veas que el ping funciona, descomentar la parte de state.apply.
 
-Si tienes un archivo en /srv/salt/seguridad.sls, el script le dirá al Master: "Oye, aplica el estado 'seguridad' al minion PruebaAPI".
+Al tienes un archivo en /srv/salt/seguridad.sls 8por ejemplo), el script le dirá al Master: "Oye, aplica el estado 'seguridad' al minion PruebaAPI".
 
-Resultados: Python recibirá un JSON detallado. Si algo falla en el hardening (por ejemplo, un puerto que no se pudo cerrar), el script te lo mostrará en pantalla.
+Python debería recibir un JSON detallados, si algo falla en el hardening (por ejemplo, un puerto que no se pudo cerrar), el script te lo mostrará en pantalla.
