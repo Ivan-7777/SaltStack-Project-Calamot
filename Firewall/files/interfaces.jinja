@@ -1,0 +1,18 @@
+auto lo
+iface lo inet loopback
+
+auto {{ pillar['firewall']['wan']['interface'] }}
+iface {{ pillar['firewall']['wan']['interface'] }} inet static
+    address {{ pillar['firewall']['wan']['ip'] }}
+    netmask {{ pillar['firewall']['wan']['mask'] }}
+    gateway {{ pillar['firewall']['wan']['gateway'] }}
+
+auto {{ pillar['firewall']['lan']['interface'] }}
+iface {{ pillar['firewall']['lan']['interface'] }} inet static
+    address {{ pillar['firewall']['lan']['ip'] }}
+    netmask {{ pillar['firewall']['lan']['mask'] }}
+
+auto {{ pillar['firewall']['dmz']['interface'] }}
+iface {{ pillar['firewall']['dmz']['interface'] }} inet static
+    address {{ pillar['firewall']['dmz']['ip'] }}
+    netmask {{ pillar['firewall']['dmz']['mask'] }}
