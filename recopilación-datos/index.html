@@ -2,158 +2,118 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Alta de cliente</title>
-
+  <title>Configuración de Servicios</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      padding: 30px;
-    }
-
-    h1 {
-      margin-bottom: 10px;
-    }
-
-    fieldset {
-      background: #fff;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      padding: 20px;
-      margin-bottom: 25px;
-    }
-
-    legend {
-      font-weight: bold;
-      padding: 0 10px;
-    }
-
-    label {
-      font-weight: bold;
-    }
-
-    input[type="text"],
-    input[type="number"] {
-      width: 100%;
-      padding: 8px;
-      margin-top: 4px;
-      margin-bottom: 12px;
-      border-radius: 4px;
-      border: 1px solid #aaa;
-    }
-
-    .hint {
-      font-size: 0.85em;
-      color: #555;
-      margin-top: -8px;
-      margin-bottom: 12px;
-    }
-
-    button {
-      padding: 12px 25px;
-      font-size: 16px;
-      background: #2d7ef7;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #1b5fd1;
-    }
+    body { font-family: Arial, sans-serif; max-width: 700px; margin: auto; }
+    fieldset { margin-bottom: 20px; padding: 15px; }
+    label { display: block; margin-top: 8px; }
+    .hidden { display: none; }
   </style>
-
   <script>
-    function toggleSection(id, checkbox) {
-      document.getElementById(id).style.display =
-        checkbox.checked ? 'block' : 'none';
+    function toggleSection(service) {
+      const section = document.getElementById(service + '-section');
+      section.style.display = section.style.display === 'block' ? 'none' : 'block';
     }
   </script>
 </head>
 <body>
 
-<h1>Alta de empresa</h1>
-<p>Complete los datos y seleccione los servicios a desplegar.</p>
+<h1>Configuración de Servicios</h1>
 
 <form method="POST" action="recibir.php">
 
-  <!-- EMPRESA -->
+  <!-- Nombre de empresa -->
   <fieldset>
-    <legend>Datos de la empresa</legend>
-
-    <label>Nombre de la empresa</label>
-    <input type="text" name="empresa" placeholder="ej: acme_corp" required>
-    <div class="hint">
-      Se usará como nombre del archivo pillar (sin espacios).
-    </div>
-  </fieldset>
-
-  <!-- SERVICIOS -->
-  <fieldset>
-    <legend>Servicios a instalar</legend>
-
+    <legend>Empresa</legend>
     <label>
-      <input type="checkbox" name="services[]" value="firewall"
-             onchange="toggleSection('firewall_section', this)">
-      Firewall
-    </label><br><br>
-
-    <label>
-      <input type="checkbox" name="services[]" value="wireguard"
-             onchange="toggleSection('wireguard_section', this)">
-      WireGuard
+      Nombre de la empresa:
+      <input type="text" name="empresa" placeholder="Ej. TecnoCorp" required>
     </label>
   </fieldset>
 
-  <!-- FIREWALL -->
-  <fieldset id="firewall_section" style="display:none">
-    <legend>Configuración Firewall</legend>
-
-    <label>Interfaz LAN</label>
-    <input type="text" name="firewall[lan_iface]" placeholder="ej: enp0s8">
-    <div class="hint">Adaptador interno (LAN).</div>
-
-    <label>IP LAN</label>
-    <input type="text" name="firewall[lan_ip]" placeholder="ej: 192.168.0.1/22">
-    <div class="hint">IP y máscara de la red LAN.</div>
-
-    <label>Interfaz DMZ</label>
-    <input type="text" name="firewall[dmz_iface]" placeholder="ej: enp0s9">
-    <div class="hint">Adaptador para la red DMZ.</div>
-
-    <label>IP DMZ</label>
-    <input type="text" name="firewall[dmz_ip]" placeholder="ej: 10.2.0.1/16">
-    <div class="hint">IP y máscara de la red DMZ.</div>
-
-    <label>Interfaz WAN</label>
-    <input type="text" name="firewall[wan_iface]" placeholder="ej: enp0s3">
-    <div class="hint">Adaptador con salida a Internet.</div>
-
-    <label>IP WAN</label>
-    <input type="text" name="firewall[wan_ip]" placeholder="ej: 172.31.3.45">
-    <div class="hint">IP externa del firewall.</div>
+  <!-- Selección de servicios -->
+  <fieldset>
+    <legend>Servicios a instalar</legend>
+    <label>
+      <input type="checkbox" name="services[]" value="wireguard" onclick="toggleSection('wireguard')"> WireGuard VPN
+    </label>
+    <label>
+      <input type="checkbox" name="services[]" value="firewall" onclick="toggleSection('firewall')"> Firewall
+    </label>
   </fieldset>
 
-  <!-- WIREGUARD -->
-  <fieldset id="wireguard_section" style="display:none">
-    <legend>Configuración WireGuard</legend>
-
-    <label>IP de la LAN del servidor VPN</label>
-    <input type="text" name="wireguard[server_lan_ip]" placeholder="ej: 192.168.0.50/22">
-    <div class="hint">IP del servidor VPN en la LAN.</div>
-
-    <label>Red VPN (ej: 10.6.0.1/24)</label>
-    <input type="text" name="wireguard[address]" placeholder="ej: 10.6.0.1/24">
-    <div class="hint">Red que usará WireGuard para los clientes.</div>
-
-    <label>Puerto de escucha UDP</label>
-    <input type="number" name="wireguard[port]" placeholder="ej: 51820">
-    <div class="hint">Puerto UDP del servicio WireGuard.</div>
+  <!-- WireGuard -->
+  <fieldset id="wireguard-section" class="hidden" style="display:none;">
+    <legend>WireGuard VPN</legend>
+    <label>
+      Puerto UDP:
+      <input type="number" name="wireguard[port]" value="51820" required>
+    </label>
+    <label>
+      IP de la red VPN (address):
+      <input type="text" name="wireguard[address]" placeholder="Ej. 10.66.66.1/24" required>
+    </label>
+    <label>
+      IP LAN estática del servidor VPN:
+      <input type="text" name="wireguard[static_lan_ip]" placeholder="Ej. 192.168.0.10" required>
+    </label>
+    <label>
+      Interfaz WAN del servidor VPN:
+      <input type="text" name="wireguard[wan_interface]" placeholder="Ej. enp0s3" required>
+    </label>
   </fieldset>
 
-  <button type="submit">Crear configuración</button>
+  <!-- Firewall -->
+  <fieldset id="firewall-section" class="hidden" style="display:none;">
+    <legend>Firewall</legend>
+    <h4>WAN</h4>
+    <label>
+      IP:
+      <input type="text" name="firewall[wan_ip]" placeholder="Ej. 10.1.105.200" required>
+    </label>
+    <label>
+      Máscara:
+      <input type="text" name="firewall[wan_mask]" placeholder="Ej. 24" required>
+    </label>
+    <label>
+      Gateway:
+      <input type="text" name="firewall[wan_gateway]" placeholder="Ej. 10.1.105.1" required>
+    </label>
+    <label>
+      Interfaz:
+      <input type="text" name="firewall[wan_interface]" placeholder="Ej. enp0s3" required>
+    </label>
 
+    <h4>LAN</h4>
+    <label>
+      IP:
+      <input type="text" name="firewall[lan_ip]" placeholder="Ej. 192.168.0.1" required>
+    </label>
+    <label>
+      Máscara:
+      <input type="text" name="firewall[lan_mask]" placeholder="Ej. 24" required>
+    </label>
+    <label>
+      Interfaz:
+      <input type="text" name="firewall[lan_interface]" placeholder="Ej. enp0s8" required>
+    </label>
+
+    <h4>DMZ</h4>
+    <label>
+      IP:
+      <input type="text" name="firewall[dmz_ip]" placeholder="Ej. 10.2.0.1" required>
+    </label>
+    <label>
+      Máscara:
+      <input type="text" name="firewall[dmz_mask]" placeholder="Ej. 16" required>
+    </label>
+    <label>
+      Interfaz:
+      <input type="text" name="firewall[dmz_interface]" placeholder="Ej. enp0s9" required>
+    </label>
+  </fieldset>
+
+  <button type="submit">Guardar configuración</button>
 </form>
 
 </body>
