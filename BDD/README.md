@@ -1,11 +1,21 @@
-# State: BDD (Database)
+## Estado: Base de Datos (MariaDB)
 
-Este estado se encarga de la instalación, configuración y securización de los servidores de Bases de Datos.
+Este estado instala y configura el servicio de base de datos MariaDB en una máquina correspondiente.
 
-## Funcionalidades
-* Instalación del motor de base de datos (PostgreSQL/MySQL).
-* Configuración de archivos `conf` (optimización de memoria y conexiones).
-* Creación de usuarios y bases de datos iniciales.
+### Contenido
 
-## Dependencias
-* Requiere acceso al puerto correspondiente (ej. 5432) gestionado por el estado `firewall`.
+- **Servicio MariaDB Global:**  
+  Proporciona un sistema de gestión de bases de datos relacional para almacenar y administrar la información de los servicios de la red.
+
+- **Motor de Base de Datos:**  
+  Instala y configura el servidor `mariadb-server`, incluyendo el servicio y los archivos de configuración principales.
+
+- **Reglas:**  
+  - Define usuarios de base de datos y asigna permisos específicos sobre las bases creadas.  
+  - Configura el acceso local o remoto al servidor MariaDB según la topología de la red.  
+  - Establece parámetros de seguridad (contraseñas, puerto de escucha, bind-address).
+
+### Variables
+
+La configuración puede variar según la arquitectura de la red (acceso local o remoto), las políticas de seguridad, el número de usuarios y las bases de datos requeridas.  
+También puede modificarse el puerto y la dirección de escucha dependiendo de la segmentación de la red y la presencia de IP fijas.
