@@ -14,7 +14,7 @@ instalar_servicios:
 # Pasar el index.html de la pagina principal de hosting
 /var/www/html/index.html:
   file.managed:
-    - source: salt://webserver-final/index.html
+    - source: salt://webserver/index.html
     - user: www-data
     - group: www-data
     - mode: 644
@@ -22,7 +22,7 @@ instalar_servicios:
 # Pasar archivo de configuración de Nginx
 /etc/nginx/nginx.conf:
   file.managed:
-    - source: salt://webserver-final/nginx.conf
+    - source: salt://webserver/nginx.conf
     - user: root
     - group: root
     - mode: 644
@@ -58,7 +58,7 @@ add_ssh_key:
 ssh_conf:
   file.managed:
     - name: /etc/ssh/sshd_config
-    - source: salt://webserver-final/sshd_config
+    - source: salt://webserver/sshd_config
     - user: root
     - group: root
     - mode: 0644
@@ -68,7 +68,7 @@ ssh_conf:
 autohosting_sh:
   file.managed:
     - name: /root/Scripts/autohosting.sh
-    - source: salt://webserver-final/autohosting.sh
+    - source: salt://webserver/autohosting.sh
     - mode: 755
     - user: root
     - group: root
@@ -78,7 +78,7 @@ autohosting_sh:
 interfaces_conf:
   file.managed:
     - name: /etc/network/interfaces
-    - source: salt://webserver-final/interfaces
+    - source: salt://webserver/interfaces
     - user: root
     - group: root
     - mode: 0644
