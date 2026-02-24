@@ -5,7 +5,7 @@ instalar_dnsmasq:
 enviarconf:
   file.managed:
    - name: /etc/dnsmasq.d/dns.conf
-   - source: salt://installdns/dns.conf
+   - source: salt://DNS/dns.conf
    - makedirs: true 
 
 dnsmasq-service:
