@@ -1,9 +1,9 @@
 # Estado: DHCP
 
-Este estado intala y configura el servicio DHCP en una maquina correspondiente
+Este estado instala y configura el servicio DHCP en una maquina correspondiente
 
 ## Contenido
-* **Servicio DHCP Global:** Otorga una ip en un rango especificado.
+* **Servicio DHCP Global:** Otorga ip's en un rango especificado.
 * **Reglas:** Especifica que DNS sera utilizado + otorgacion de ip fijas a servidores necesarios.
 
 ## Variables
