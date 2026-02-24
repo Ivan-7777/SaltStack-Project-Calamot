@@ -1,0 +1,47 @@
+#!/usr/sbin/nft -f
+define WP = { 80, 443, 22 }
+define DHCP = { 67, 68 }
+define DNS = { 53 }
+define SALT = { 4505, 4506 }
+
+# Interfaces dinámicas
+define WAN = "{{ pillar['firewall']['wan']['interface'] }}"
+define LAN = "{{ pillar['firewall']['lan']['interface'] }}"
+define DMZ = "{{ pillar['firewall']['dmz']['interface'] }}"
+
+table inet filter {
+    chain input {
+        type filter hook input priority 0; policy drop;
+        iifname $WAN ct state established accept
+        iifname $LAN udp sport $DHCP accept
+        iifname $LAN tcp sport $SALT accept
+    }
+
+    chain forward {
+        type filter hook forward priority 0; policy drop;
+        iifname $WAN accept
+        oifname $WAN accept
+        oifname $LAN ct state established accept
+        oifname $DMZ tcp dport $WP accept
+        oifname $LAN udp dport $DNS accept
+
+        # Solo si el pillar tiene wireguard definido
+        {% if pillar.get('wireguard') %}
+        oifname $WAN udp dport {{ pillar['wireguard']['port'] }} accept
+        {% endif %}
+    }
+
+    chain output {
+        type filter hook output priority 0; policy drop;
+        oifname $LAN udp dport $DHCP accept
+        oifname $WAN accept
+        oifname $LAN tcp dport $SALT accept
+    }
+}
+
+table inet nat {
+    chain postrouting {
+        type nat hook postrouting priority 100;
+        oifname $WAN masquerade
+    }
+}
