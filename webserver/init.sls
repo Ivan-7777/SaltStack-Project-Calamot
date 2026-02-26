@@ -84,40 +84,6 @@ interfaces_conf:
     - mode: 0644
     - makedirs: True
 
-# NUEVO: Crear directorio para reglas udev si no existe
-udev_rules_dir:
-  file.directory:
-    - name: /etc/udev/rules.d
-    - user: root
-    - group: root
-    - mode: 0755
-
-# NUEVO: Crear regla udev para forzar nombre eth0 por MAC
-create_udev_rule:
-  cmd.run:
-    - name: |
-        IFACE=$(ls /sys/class/net | grep -v lo | head -n 1)
-        MAC=$(cat /sys/class/net/$IFACE/address)
-        echo 'SUBSYSTEM=="net", ACTION=="add", ATTR{address}=="'$MAC'", NAME="eth0"' | tee /etc/udev/rules.d/10-network.rules
-    - unless: |
-        # Verificar si la regla ya existe y es correcta
-        IFACE=$(ls /sys/class/net | grep -v lo | head -n 1)
-        CURRENT_MAC=$(cat /sys/class/net/$IFACE/address 2>/dev/null)
-        if [ -f /etc/udev/rules.d/10-network.rules ]; then
-          grep -q "ATTR{address}==\"$CURRENT_MAC\"" /etc/udev/rules.d/10-network.rules
-        else
-          false
-        fi
-    - require:
-      - file: udev_rules_dir
-
-# NUEVO: Recargar reglas udev si se crea o modifica la regla
-reload_udev_rules:
-  cmd.run:
-    - name: udevadm control --reload-rules && udevadm trigger --attr-match=subsystem=net
-    - onchanges:
-      - cmd: create_udev_rule
-
 # Reiniciar y habilitar el servicio ssh
 ssh_service:
   service.running:
