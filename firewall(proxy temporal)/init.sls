@@ -18,7 +18,7 @@ net.ipv4.ip_forward:
 # Configure network interfaces
 /etc/network/interfaces:
   file.managed:
-    - source: salt://firewall-proxy/interfaces
+    - source: salt://'firewall(proxy temporal)'/interfaces
     - user: root
     - group: root
     - mode: 644
