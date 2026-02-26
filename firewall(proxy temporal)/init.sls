@@ -80,3 +80,8 @@ nftables:
 bind9:
   service.running:
     - enable: True
+
+# Reiniciar Maquina para que se reinicien los demas servicios entre estos el networking.service
+reiniar-maquinaweb:
+  cmd.run:
+    - name: sleep 20 && reboot
