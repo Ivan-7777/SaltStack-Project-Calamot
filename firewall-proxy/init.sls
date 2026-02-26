@@ -1,6 +1,3 @@
-# SaltStack State for Firewall Configuration
-# Includes: nftables, Bind9 DNS, Network Configuration
-
 # Update system packages
 firewall_packages:
   pkg.installed:
@@ -18,7 +15,7 @@ net.ipv4.ip_forward:
 # Configure network interfaces
 /etc/network/interfaces:
   file.managed:
-    - source: salt://'firewall(proxy temporal)'/interfaces
+    - source: salt://firewall-proxy/interfaces
     - user: root
     - group: root
     - mode: 644
@@ -26,7 +23,7 @@ net.ipv4.ip_forward:
 # Configure nftables
 /etc/nftables.conf:
   file.managed:
-    - source: salt://'firewall(proxy temporal)'/nftables.conf
+    - source: salt://firewall-proxy/nftables.conf
     - user: root
     - group: root
     - mode: 644
@@ -39,7 +36,7 @@ nftables:
 # Configure Bind9 - named.conf.local
 /etc/bind/named.conf.local:
   file.managed:
-    - source: salt://'firewall(proxy temporal)'/named.conf.local
+    - source: salt://firewall-proxy/named.conf.local
     - user: root
     - group: root
     - mode: 644
@@ -47,7 +44,7 @@ nftables:
 # Configure Bind9 - named.conf.options
 /etc/bind/named.conf.options:
   file.managed:
-    - source: salt://'firewall(proxy temporal)'/named.conf.options
+    - source: salt://firewall-proxy/named.conf.options
     - user: root
     - group: root
     - mode: 644
@@ -55,7 +52,7 @@ nftables:
 # Create DNS zone - server (directa)
 /etc/bind/db.server:
   file.managed:
-    - source: salt://'firewall(proxy temporal)'/db.server
+    - source: salt://firewall-proxy/db.server
     - user: root
     - group: bind
     - mode: 644
@@ -63,7 +60,7 @@ nftables:
 # Create DNS zone - 1.168.192 (inversa LAN)
 /etc/bind/db.1.168.192:
   file.managed:
-    - source: salt://'firewall(proxy temporal)'/db.1.168.192
+    - source: salt://firewall-proxy/db.1.168.192
     - user: root
     - group: bind
     - mode: 644
@@ -71,7 +68,7 @@ nftables:
 # Create DNS zone - 2.168.192 (inversa DMZ)
 /etc/bind/db.2.168.192:
   file.managed:
-    - source: salt://'firewall(proxy temporal)'/db.2.168.192
+    - source: salt://firewall-proxy/db.2.168.192
     - user: root
     - group: bind
     - mode: 644
