@@ -1,44 +1,37 @@
-#Instalación paquete nftables
-instalar_nftables:
-  pkg.installed:
-   - name: 'nftables'
-
-#Creación nftables
-crearruta:
+# Configurar interfaces
+configurar_interfaces:
   file.managed:
-   - name: /etc/nftables.conf
-   - source: salt://firewall/nftables.conf
-   - makedirs: true
+    - name: /etc/network/interfaces
+    - source: salt://firewall/files/interfaces.jinja
+    - template: jinja
+    - user: root
+    - group: root
+    - mode: 644
 
-#Habilitamos el servicio de nftables
-habilitar_nftables:   
-  cmd.run:
-   - name: systemctl enable nftables.service
-
-#Habilitamos forward de paquetes
-habilitar_forward:
+# Configurar nftables
+nftables_conf:
   file.managed:
-   - name: /etc/sysctl.conf
-   - source: salt://firewall/sysctl.conf
-   - makedirs: true
+    - name: /etc/nftables.conf
+    - source: salt://firewall/files/nftables.conf.jinja
+    - template: jinja
+    - user: root
+    - group: root
+    - mode: 600
 
-#Aplicar cambios del archivo sysctl.conf
-activar_forward:  
+aplicar_nftables:
   cmd.run:
-   - name: sysctl -p
+    - name: systemctl restart nftables.service
+    - require:
+      - file: nftables_conf
 
-aplicar-cambios-nftables:
+habilitar_nftables:
   cmd.run:
-   - name: systemctl restart nftables.service
+    - name: systemctl enable nftables.service
+    - require:
+      - file: configurar_interfaces
 
-#Asignación de IPs Firewall
-cambio_ip:
-  file.managed:
-   - name: /etc/network/interfaces   
-   - source: salt://firewall/interfaces
-   - makedirs: true
-
-aignación_ips:
+reiniciar_networking:
   cmd.run:
-   - name: systemctl restart networking.service
-
+    - name: reboot
+    - require:
+      - file: configurar_interfaces
