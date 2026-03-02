@@ -1,23 +1,265 @@
-Incluyo un formulario HTML para recopilar los datos. Con PHP, agarro estos datos y los transformo a pillars para que el servidor salt master los utilice para ejecutar estados customizados. 
-Todos estos archivos se tienen que meter en /var/www/html/.
-Instalar NGINX en salt master para incluir la página web con el formulario.
+# 📘 Sistema de Formulario Web para Generación Automática de Pillars (SaltStack)
 
-Teneis que crear directorio /srv/pillar/customers/
-En ese directorio se irán pasando los pillars según el cliente haga el formulario.
+## 📌 Objetivo del proyecto
 
-Hay que descargar los paquetes apt install php php-fpm -y
+Este sistema permite que un cliente (o técnico) introduzca información desde un **formulario web** y que dicha información se traduzca automáticamente en **Pillars de SaltStack**, listos para ser consumidos por distintos **minions** (firewall, VPN, servidores, etc.).
 
-Los archivos recibir.php y index.html los meteis en /var/www/html
+La idea principal es:
+- Que **la única parte manual** sea introducir los datos del cliente y de los servicios.
+- Que **todo lo demás sea automático**, reproducible y escalable.
+- Que los **estados de Salt no contengan lógica de cliente**, sino que dependan **100% de Pillars**.
 
-el archivo default va en /etc/nginx/sites-available/
+---
 
-Haceis un restart del servicio una vez metido.
+## 🧱 Arquitectura general
 
-Accedeis via web al servidor salt y al poner los datos se os creará un sls con el nombre del archivo en /srv/pillar/customers/.
 
-Para hacer que el minion use el pilar, dentro de /srv/pillar/ creais un archivo top.sls que tenga esta estructura:
+Cliente (Web)
+│
+▼
+Formulario HTML
+│
+▼
+recibir.php
+│
+├── Validación de datos
+├── Construcción del Pillar en memoria
+├── Escritura de un único SLS por empresa
+│
+▼
+/srv/pillar/customers/<empresa>.sls
+│
+▼
+Salt Master
+│
+▼
+Minions (firewall, vpn, web, etc.)
+
+
+---
+
+## 📂 Estructura de archivos
+
+### Web (Servidor Apache/Nginx)
+
+
+/var/www/html/
+├── index.html # Formulario principal
+└── recibir.php # Procesa el formulario y genera el Pillar
+
+
+### Salt (Master)
+
+
+/srv/pillar/
+├── top.sls
+└── customers/
+└── empresa.sls # Pillar generado automáticamente
+
+
+---
+
+## 🧩 Filosofía de diseño
+
+### 1️⃣ Un solo Pillar por empresa
+
+- Todos los datos introducidos en el formulario se guardan en **un único archivo SLS**.
+- El nombre del archivo **es el nombre de la empresa**.
+- Ejemplo:
+  ```bash
+  /srv/pillar/customers/acme.sls
+
+Esto permite:
+
+Compartir datos entre servicios (ej: WireGuard ↔ Firewall).
+
+Evitar duplicidad.
+
+Facilitar la escalabilidad.
+
+2️⃣ Selección de servicios desde el formulario
+
+El formulario comienza con una selección de servicios:
+
+WireGuard
+
+Firewall
+
+(futuro: Nginx, DNS, DHCP, etc.)
+
+Solo los servicios seleccionados:
+
+Aparecen como secciones en el formulario.
+
+Se escriben dentro del Pillar final.
+
+🧾 Estructura del Pillar generado
+
+Ejemplo real de Pillar generado por el sistema:
+
+wireguard:
+  port: 45450
+  address: 10.50.0.1/24
+  static_lan_ip: 192.168.0.10
+  wan_interface: enp0s3
+
+firewall:
+  wan:
+    ip: 10.1.105.200
+    mask: 24
+    gateway: 10.1.105.1
+    interface: enp0s3
+  lan:
+    ip: 192.168.0.1
+    mask: 24
+    interface: enp0s8
+  dmz:
+    ip: 10.2.0.1
+    mask: 16
+    interface: enp0s9
+
+⚠️ Regla clave:
+El formulario define la estructura, el estado solo la consume.
+
+🖥️ El formulario (index.html)
+Qué ve el cliente
+
+Campo obligatorio: Nombre de la empresa
+
+Selección de servicios mediante checkboxes
+
+Secciones dinámicas que aparecen según el servicio elegido
+
+Campos específicos según servicio:
+
+WireGuard: puerto, IP de red VPN, IP LAN del servidor, interfaz WAN
+
+Firewall: IP, máscara, gateway e interfaz para WAN, LAN y DMZ
+
+Ejemplos y placeholders para guiar al usuario
+
+Qué NO hace el formulario
+
+No crea reglas de firewall complejas
+
+No ejecuta Salt
+
+No tiene lógica de negocio
+
+👉 Solo recoge datos.
+
+⚙️ Procesamiento (recibir.php)
+Responsabilidades
+
+Validar el nombre de empresa
+
+Crear la estructura base del Pillar
+
+Añadir secciones solo si el servicio fue seleccionado
+
+Guardar el Pillar como:
+
+/srv/pillar/customers/<empresa>.sls
+Puntos clave
+
+No se usa ningún nombre hardcodeado (cliente, customer, etc.)
+
+El nombre del archivo es exactamente el introducido
+
+Se controla permisos (0644) para que Salt pueda leerlo
+
+El formato YAML es limpio y compatible con Jinja
+
+🔗 Relación con los estados de Salt
+Estados simples y limpios
+
+Los estados:
+
+No contienen if para clientes
+
+No contienen lógica de selección de servicios
+
+Solo leen valores del Pillar
+
+Ejemplo real para WireGuard:
+
+[Interface]
+Address = {{ pillar['wireguard']['address'] }}
+ListenPort = {{ pillar['wireguard']['port'] }}
+
+Si el Pillar no existe → el estado no se aplica (por top.sls).
+
+🔗 Asociación de Pillars a Minions
+
+Para que cada minion reciba solo los datos que necesita del Pillar generado por el formulario, se utiliza el archivo top.sls de SaltStack.
+
+📂 Ubicación del top.sls
+/srv/pillar/top.sls
+🔹 Sintaxis básica
 base:
-  'wg-minion':
-    - customers.funcasta
+  'firewall-minion':
+    - customers.empresa.firewall
 
-siendo entre las comillas el nombre del minion, y abajo el nombre del directorio, seguido del nombre del sls.
+  'vpn-minion':
+    - customers.empresa.wireguard
+
+  'web-minion':
+    - customers.empresa.nginx
+Explicación
+
+firewall-minion
+
+Recibirá únicamente los datos bajo firewall del Pillar customers/empresa.sls.
+
+Puede también leer algunos datos de otros servicios si es necesario, como puertos de WireGuard para NAT.
+
+vpn-minion
+
+Recibe solo wireguard.
+
+Ejecuta los estados de VPN.
+
+web-minion
+
+Recibe solo nginx (o futuros servicios).
+
+🔹 Ejemplo concreto
+
+Supongamos que el Pillar acme.sls contiene:
+
+wireguard:
+  port: 51820
+  address: 10.66.66.1/24
+  static_lan_ip: 192.168.0.10
+  wan_interface: enp0s3
+
+firewall:
+  wan:
+    ip: 10.1.105.200
+    mask: 24
+    gateway: 10.1.105.1
+    interface: enp0s3
+  lan:
+    ip: 192.168.0.1
+    mask: 24
+    interface: enp0s8
+  dmz:
+    ip: 10.2.0.1
+    mask: 16
+    interface: enp0s9
+
+top.sls para asignarlo:
+
+base:
+  'firewall-minion':
+    - customers.acme.firewall
+
+  'vpn-minion':
+    - customers.acme.wireguard
+🔹 Notas importantes
+
+El nombre acme debe coincidir con el nombre de empresa ingresado en el formulario.
+
+Cada minion solo aplica los estados que le corresponden, evitando interferencias.
+
+Puedes usar wildcards o nodegroups para aplicar el mismo Pillar a varios minions si es necesario.
