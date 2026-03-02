@@ -1,7 +1,10 @@
-#INSTALAMOS LOS PAQUETES NECESARIOS
+# --------------------------------------------------------
+# Estado para crear la base de datos MariaDB central y tablas
+# --------------------------------------------------------
+
+# Instalar Paquetes necesarios
 mariadb-server:
-  pkg.installed:
-    - name: mariadb-server
+  pkg.installed: []
 
 python3-pip:
   pkg.installed
@@ -13,46 +16,57 @@ pymysql:
     - require:
       - pkg: python3-pip
 
-#SERVICIO MYSQL
-mariadb@.service:
+
+# Iniciar el servicio de MariaDB
+mariadb-service:
   service.running:
-    - name: mysql
+    - name: mariadb
     - enable: True
     - require:
       - pkg: mariadb-server
 
-#BASE DE DATOS
+# Crear la base de datos 'salt_logs'
 crear_basedatos:
   mysql_database.present:
-    - name: ejemplo_db
+    - name: salt_logs
     - connecion_user: root
     - connection_unix_socket: /var/run/mysqld/mysqld.sock
     - connection_backend: PyMySQL
-    - require:
-      - service: mariadb@.service
-      - pip: pymysql
 
-#USUARIO MYSQL
-crear_usuario:
-  mysql_user.present:
-    - name: ejemplo_user
-    - host: localhost
-    - password: '326Edwin'
-    - connection_user: root
-    - connection_unix_socket: /var/run/mysqld/mysqld.sock
-    - connection_backend: PyMySQL
-    - require:
-      - mysql_database: crear_basedatos
+# Crear usuario 'saltlogger' con permisos mínimos
+crear_usuario_saltlogger:
+  cmd.run:
+    - name: >
+        mysql -u root -pYOUR_ROOT_PASSWORD -e "
+        CREATE USER IF NOT EXISTS 'saltlogger'@'%' IDENTIFIED BY 'PASSWORD_SEGURA';
+        CREATE USER IF NOT EXISTS 'saltlogger'@'localhost' IDENTIFIED BY 'PASSWORD_SEGURA';
+        GRANT INSERT, SELECT, CREATE, ALTER ON salt_logs.* TO 'saltlogger'@'%';
+        GRANT INSERT, SELECT, CREATE, ALTER ON salt_logs.* TO 'saltlogger'@'localhost';
+        FLUSH PRIVILEGES;"
 
-#PRIVILEGIOS
-permisos_usuario:
-  mysql_grants.present:
-    - grant: all privileges
-    - database: ejemplo_db.*
-    - user: ejemplo_user
-    - host: localhost
-    - connection_user: root
-    - connection_unix_socket: /var/run/mysqld/mysqld.sock
-    - connection_backend: PyMySQL
-    - require:
-      - mysql_user: crear_usuario
+# Crear tabla para logs de ejecución de estados
+crear_tabla_logs:
+  cmd.run:
+    - name: >
+        mysql -u root -pYOUR_ROOT_PASSWORD -D salt_logs -e "
+        CREATE TABLE IF NOT EXISTS salt_state_logs (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            hostname VARCHAR(255),
+            state_name VARCHAR(255),
+            result BOOLEAN,
+            changes TEXT,
+            execution_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );"
+
+# Crear tabla para backups de máquinas
+crear_tabla_backups:
+  cmd.run:
+    - name: >
+        mysql -u root -pYOUR_ROOT_PASSWORD -D salt_logs -e "
+        CREATE TABLE IF NOT EXISTS machine_backups (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            hostname VARCHAR(255),
+            backup_path TEXT,
+            status VARCHAR(50),
+            execution_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );"
