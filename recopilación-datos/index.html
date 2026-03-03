@@ -2,115 +2,89 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Configuración de Servicios</title>
+  <title>Configuración de servicios</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 700px; margin: auto; }
+    body { font-family: Arial; max-width: 700px; margin: auto; }
     fieldset { margin-bottom: 20px; padding: 15px; }
     label { display: block; margin-top: 8px; }
-    .hidden { display: none; }
   </style>
   <script>
-    function toggleSection(service) {
-      const section = document.getElementById(service + '-section');
-      section.style.display = section.style.display === 'block' ? 'none' : 'block';
+    function toggleSection(service, checkbox) {
+      document.getElementById(service + "-section").style.display = checkbox.checked ? "block" : "none";
     }
   </script>
 </head>
 <body>
-
-<h1>Configuración de Servicios</h1>
+<h1>Configuración de servicios</h1>
 
 <form method="POST" action="recibir.php">
 
-  <!-- Nombre de empresa -->
   <fieldset>
     <legend>Empresa</legend>
     <label>
       Nombre de la empresa:
-      <input type="text" name="empresa" placeholder="Ej. TecnoCorp" required>
+      <input type="text" name="company" placeholder="TecnoCorp" required>
     </label>
   </fieldset>
 
-  <!-- Selección de servicios -->
   <fieldset>
     <legend>Servicios a instalar</legend>
-    <label>
-      <input type="checkbox" name="services[]" value="wireguard" onclick="toggleSection('wireguard')"> WireGuard VPN
-    </label>
-    <label>
-      <input type="checkbox" name="services[]" value="firewall" onclick="toggleSection('firewall')"> Firewall
-    </label>
+    <label><input type="checkbox" name="services[]" value="wireguard" onchange="toggleSection('wireguard', this)"> WireGuard VPN</label>
+    <label><input type="checkbox" name="services[]" value="firewall" onchange="toggleSection('firewall', this)"> Firewall</label>
+    <label><input type="checkbox" name="services[]" value="dhcp" onchange="toggleSection('dhcp', this)"> DHCP</label>
   </fieldset>
 
   <!-- WireGuard -->
-  <fieldset id="wireguard-section" class="hidden" style="display:none;">
+  <fieldset id="wireguard-section" style="display:none">
     <legend>WireGuard VPN</legend>
-    <label>
-      Puerto UDP:
-      <input type="number" name="wireguard[port]" value="51820" required>
-    </label>
-    <label>
-      IP de la red VPN (address):
-      <input type="text" name="wireguard[address]" placeholder="Ej. 10.66.66.1/24" required>
-    </label>
-    <label>
-      IP LAN estática del servidor VPN:
-      <input type="text" name="wireguard[static_lan_ip]" placeholder="Ej. 192.168.0.10" required>
-    </label>
-    <label>
-      Interfaz WAN del servidor VPN:
-      <input type="text" name="wireguard[wan_interface]" placeholder="Ej. enp0s3" required>
-    </label>
+    <label>Puerto UDP: <input type="number" name="wireguard[port]" value="51820" required></label>
+    <label>IP de red VPN (ej. 10.66.66.1/24): <input type="text" name="wireguard[address]" placeholder="10.66.66.1/24" required></label>
+    <label>IP LAN del servidor VPN: <input type="text" name="wireguard[static_lan_ip]" placeholder="192.168.0.10" required></label>
+    <label>Interfaz WAN para NAT: <input type="text" name="wireguard[wan_interface]" placeholder="enp0s3" required></label>
   </fieldset>
 
   <!-- Firewall -->
-  <fieldset id="firewall-section" class="hidden" style="display:none;">
+  <fieldset id="firewall-section" style="display:none">
     <legend>Firewall</legend>
     <h4>WAN</h4>
-    <label>
-      IP:
-      <input type="text" name="firewall[wan_ip]" placeholder="Ej. 10.1.105.200" required>
-    </label>
-    <label>
-      Máscara:
-      <input type="text" name="firewall[wan_mask]" placeholder="Ej. 24" required>
-    </label>
-    <label>
-      Gateway:
-      <input type="text" name="firewall[wan_gateway]" placeholder="Ej. 10.1.105.1" required>
-    </label>
-    <label>
-      Interfaz:
-      <input type="text" name="firewall[wan_interface]" placeholder="Ej. enp0s3" required>
-    </label>
+    <label>IP: <input type="text" name="firewall[wan][ip]" placeholder="10.1.105.200" required></label>
+    <label>Máscara: <input type="text" name="firewall[wan][mask]" placeholder="24" required></label>
+    <label>Gateway: <input type="text" name="firewall[wan][gateway]" placeholder="10.1.105.1" required></label>
+    <label>Interfaz: <input type="text" name="firewall[wan][interface]" placeholder="enp0s3" required></label>
 
     <h4>LAN</h4>
-    <label>
-      IP:
-      <input type="text" name="firewall[lan_ip]" placeholder="Ej. 192.168.0.1" required>
-    </label>
-    <label>
-      Máscara:
-      <input type="text" name="firewall[lan_mask]" placeholder="Ej. 24" required>
-    </label>
-    <label>
-      Interfaz:
-      <input type="text" name="firewall[lan_interface]" placeholder="Ej. enp0s8" required>
-    </label>
+    <label>IP: <input type="text" name="firewall[lan][ip]" placeholder="192.168.0.1" required></label>
+    <label>Máscara: <input type="text" name="firewall[lan][mask]" placeholder="24" required></label>
+    <label>Interfaz: <input type="text" name="firewall[lan][interface]" placeholder="enp0s8" required></label>
 
     <h4>DMZ</h4>
-    <label>
-      IP:
-      <input type="text" name="firewall[dmz_ip]" placeholder="Ej. 10.2.0.1" required>
-    </label>
-    <label>
-      Máscara:
-      <input type="text" name="firewall[dmz_mask]" placeholder="Ej. 16" required>
-    </label>
-    <label>
-      Interfaz:
-      <input type="text" name="firewall[dmz_interface]" placeholder="Ej. enp0s9" required>
-    </label>
+    <label>IP: <input type="text" name="firewall[dmz][ip]" placeholder="10.2.0.1" required></label>
+    <label>Máscara: <input type="text" name="firewall[dmz][mask]" placeholder="16" required></label>
+    <label>Interfaz: <input type="text" name="firewall[dmz][interface]" placeholder="enp0s9" required></label>
+  </fieldset>
+
+  <!-- DHCP -->
+  <fieldset id="dhcp-section" style="display:none">
+    <legend>DHCP</legend>
+    <label><input type="checkbox" name="dhcp[log]" value="true" checked> Activar logging</label>
+
+    <h4>LAN</h4>
+    <label>Interfaz LAN: <input type="text" name="dhcp[interfaces][lan][name]" placeholder="enp0s8" required></label>
+    <label>Rango IP inicio: <input type="text" name="dhcp[interfaces][lan][range_start]" placeholder="192.168.0.50" required></label>
+    <label>Rango IP fin: <input type="text" name="dhcp[interfaces][lan][range_end]" placeholder="192.168.3.200" required></label>
+    <label>Netmask: <input type="text" name="dhcp[interfaces][lan][netmask]" placeholder="255.255.252.0" required></label>
+    <label>Tiempo de lease: <input type="text" name="dhcp[interfaces][lan][lease_time]" placeholder="24h" required></label>
+
+    <h4>DMZ</h4>
+    <label>Interfaz DMZ: <input type="text" name="dhcp[interfaces][dmz][name]" placeholder="enp0s9" required></label>
+    <label>Rango IP inicio: <input type="text" name="dhcp[interfaces][dmz][range_start]" placeholder="192.168.1.50" required></label>
+    <label>Rango IP fin: <input type="text" name="dhcp[interfaces][dmz][range_end]" placeholder="192.168.1.200" required></label>
+    <label>Netmask: <input type="text" name="dhcp[interfaces][dmz][netmask]" placeholder="255.255.252.0" required></label>
+    <label>Tiempo de lease: <input type="text" name="dhcp[interfaces][dmz][lease_time]" placeholder="24h" required></label>
+
+    <h4>Opciones DHCP</h4>
+    <label>Gateways (separados por coma): <input type="text" name="dhcp[options][gateway]" placeholder="192.168.0.1,192.168.1.1" required></label>
+    <label>DNS (separados por coma): <input type="text" name="dhcp[options][dns]" placeholder="192.168.1.15" required></label>
   </fieldset>
 
   <button type="submit">Guardar configuración</button>
