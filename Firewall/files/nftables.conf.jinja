@@ -25,8 +25,8 @@ table inet filter {
         oifname $DMZ tcp dport $WP accept
         oifname $LAN udp dport $DNS accept
 
-        # Solo si el pillar tiene wireguard definido
         {% if pillar.get('wireguard') %}
+        # Solo si el pillar tiene wireguard definido
         oifname $WAN udp dport {{ pillar['wireguard']['port'] }} accept
         {% endif %}
     }
