@@ -25,7 +25,7 @@ Para garantizar una recuperación rápida (MTTR bajo), se deben mantener copias 
 * **`/srv/pillar/`**: Contiene los datos sensibles y variables de entorno.
 
 ### B. Repositorio de Código
-* Todo cambio en los archivos `.sls` debe ser versionado en un repositorio **Git** externo. En caso de error, la contingencia consiste en realizar un `git checkout` a la última versión estable.
+* Todo cambio en los archivos `.sls` debe ser copiados a la última versión estable en github.
 
 ---
 
@@ -47,17 +47,15 @@ En caso de caída total del servidor Master:
 
 1.  **Reaprovisionamiento:** Levantar una nueva instancia de Debian 12.
 2.  **Restauración de Identidad:** Copiar la carpeta `/etc/salt/pki/` desde el backup para mantener la relación de confianza con los minions existentes.
-3.  **Despliegue de API:** Reinstalar `salt-api` y aplicar el archivo `api.conf` respaldado.
-4.  **Validación:** Ejecutar el script `seguridad_api.py` con la función `test.ping` para confirmar la restauración del servicio.
 
 ---
 
 ## 5. Mantenimiento Preventivo
 
 * **Auditoría de Logs:** Revisión semanal de `/var/log/salt/master` para detectar intentos de intrusión o errores de sintaxis recurrentes.
-* **Rotación de Certificados:** Renovación anual de los certificados SSL de la API.
-* **Simulacro de Fallo:** Una vez al trimestre, verificar que el backup de las llaves PKI es funcional.
+* **Rotación de Certificados:** Renovar manualmente los certificados SSL de la API anualmente.
+* **Simulacro de Fallo:** Verificar los backups de las claves PKI de forma continua, preferiblemente de forma semanal.
 
 ---
 **Última actualización:** Marzo 2026
-**Responsable:** Administrador de Sistemas / Seguridad
+**Responsable:** Administradores de Sistemas / Seguridad
