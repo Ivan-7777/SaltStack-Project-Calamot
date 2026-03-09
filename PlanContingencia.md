@@ -1,6 +1,6 @@
 # Plan de Contingencia: Infraestructura SaltStack API
 
-Este documento define las estrategias de respuesta, recuperación y mitigación ante fallos críticos en el sistema de orquestación y automatización de seguridad basado en SaltStack.
+Este plan de contingencia define las estrategias de respuesta, recuperación y mitigación ante fallos críticos en el sistema de orquestación y automatización de seguridad basado en SaltStack.
 
 ---
 
@@ -9,8 +9,8 @@ Este documento define las estrategias de respuesta, recuperación y mitigación 
 | Escenario | Impacto | Acción de Respuesta |
 | :--- | :--- | :--- |
 | **Fallo de Autenticación (401/403)** | Bloqueo total de la API | Verificar vigencia del Token y estado del servicio PAM. Reiniciar `salt-master`. |
-| **Error SSL / Certificado Expirado** | Conexión denegada (HTTPS) | Regenerar certificados en `/etc/salt/pki/api/` y actualizar `api.conf`. |
-| **Pérdida de Conexión con Minions** | Inoperatividad del Hardening | Verificar conectividad de red y re-aceptar llaves con `salt-key -a`. |
+| **Error SSL / Certificado Expirado** | Conexión denegada (HTTPS) | Regenerar certificados en `/etc/salt/pki/` y actualizar `api.conf`. |
+| **Pérdida de Conexión con Minions** | Inoperatividad del Hardening | Verificar conectividad de red, borrar minions antiguos `salt-key -d`  y re-aceptar llaves con `salt-key -a`. |
 | **Configuración de Seguridad Errónea** | Bloqueo de servicios (ej. SSH) | Acceso por consola de emergencia para revertir `/etc/ssh/sshd_config`. |
 
 ---
