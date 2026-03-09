@@ -10,8 +10,27 @@
   </style>
   <script>
     function toggleSection(service, checkbox) {
-      document.getElementById(service + "-section").style.display = checkbox.checked ? "block" : "none";
+      const section = document.getElementById(service + "-section");
+      // Mostrar u ocultar según el estado del checkbox
+      section.style.display = checkbox.checked ? "block" : "none";
+      // Habilitar/deshabilitar todos los campos de la sección
+      const inputs = section.querySelectorAll('input, select, textarea');
+      inputs.forEach(input => {
+        input.disabled = !checkbox.checked; // deshabilitado si no está checked
+      });
     }
+
+    // Al cargar la página, deshabilitar los campos de todas las secciones ocultas
+    window.addEventListener('DOMContentLoaded', function() {
+      const sections = ['wireguard-section', 'firewall-section', 'dhcp-section'];
+      sections.forEach(id => {
+        const section = document.getElementById(id);
+        if (section && section.style.display === 'none') {
+          const inputs = section.querySelectorAll('input, select, textarea');
+          inputs.forEach(input => input.disabled = true);
+        }
+      });
+    });
   </script>
 </head>
 <body>
