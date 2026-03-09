@@ -1,4 +1,4 @@
-# 🛡️ Plan de Contingencia: Infraestructura SaltStack API
+# Plan de Contingencia: Infraestructura SaltStack API
 
 Este documento define las estrategias de respuesta, recuperación y mitigación ante fallos críticos en el sistema de orquestación y automatización de seguridad basado en SaltStack.
 
@@ -15,7 +15,7 @@ Este documento define las estrategias de respuesta, recuperación y mitigación 
 
 ---
 
-## 2. Estrategia de Backup y Recuperación 💾
+## 2. Estrategia de Backup y Recuperación
 
 Para garantizar una recuperación rápida (MTTR bajo), se deben mantener copias de seguridad actualizadas de los siguientes componentes:
 
@@ -29,7 +29,7 @@ Para garantizar una recuperación rápida (MTTR bajo), se deben mantener copias 
 
 ---
 
-## 3. Procedimiento de "Rollback" (Marcha Atrás) 🔄
+## 3. Procedimiento de "Rollback" (Marcha Atrás)
 
 Si una actualización de seguridad enviada a través de la API causa inestabilidad:
 
@@ -41,7 +41,7 @@ Si una actualización de seguridad enviada a través de la API causa inestabilid
 
 ---
 
-## 4. Protocolo de Recuperación ante Desastres (DRP) 🚨
+## 4. Protocolo de Recuperación ante Desastres (DRP)
 
 En caso de caída total del servidor Master:
 
@@ -52,7 +52,7 @@ En caso de caída total del servidor Master:
 
 ---
 
-## 5. Mantenimiento Preventivo ⚙️
+## 5. Mantenimiento Preventivo
 
 * **Auditoría de Logs:** Revisión semanal de `/var/log/salt/master` para detectar intentos de intrusión o errores de sintaxis recurrentes.
 * **Rotación de Certificados:** Renovación anual de los certificados SSL de la API.
