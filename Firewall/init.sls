@@ -2,7 +2,7 @@
 configurar_interfaces:
   file.managed:
     - name: /etc/network/interfaces
-    - source: salt://firewall/files/interfaces.jinja
+    - source: salt://Firewall/files/interfaces.jinja
     - template: jinja
     - user: root
     - group: root
@@ -12,7 +12,7 @@ configurar_interfaces:
 nftables_conf:
   file.managed:
     - name: /etc/nftables.conf
-    - source: salt://firewall/files/nftables.conf.jinja
+    - source: salt://Firewall/files/nftables.conf.jinja
     - template: jinja
     - user: root
     - group: root
