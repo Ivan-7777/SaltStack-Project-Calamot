@@ -21,7 +21,7 @@ Para garantizar una recuperación rápida (MTTR bajo), se deben mantener copias 
 
 ### A. Directorios Críticos
 * **`/etc/salt/`**: Contiene la configuración del Master y, lo más importante, la carpeta **`pki/`**. Sin las llaves PKI, los minions no confiarán en el Master.
-* **`/srv/salt/`**: Contiene todos los estados (`.sls`) y archivos de configuración de seguridad.
+* **`/srv/salt/`**: Contiene todos los estados (`.sls`) y archivos de configuración de seguridad del apartado salt.
 * **`/srv/pillar/`**: Contiene los datos sensibles y variables de entorno.
 
 ### B. Repositorio de Código
