@@ -35,6 +35,38 @@ Este repositorio se centra en la gestión declarativa del sistema y la separaci�
 
 ---
 
+## Ciberseguridad
+
+La seguridad es uno de los pilares fundamentales de este proyecto. Aunque se trata de un laboratorio de aprendizaje, todas las configuraciones se han diseñado teniendo en cuenta **principios básicos de ciberseguridad y hardening de sistemas**.
+
+El objetivo es que la infraestructura automatizada con SaltStack no solo sea funcional, sino también **segura por defecto**.
+
+Entre las medidas implementadas o contempladas dentro del proyecto se encuentran:
+
+- **Hardening del sistema**
+  - Ajustes de seguridad mediante `sysctl` para reforzar el kernel.
+  - Configuraciones seguras del servicio **SSH** (restricción de accesos, deshabilitar login root, etc.).
+  
+- **Gestión segura de comunicaciones**
+  - Uso de **certificados y autoridad de certificación (CA)** para servicios que requieran cifrado.
+  - Implementación de **túneles VPN con WireGuard** para proteger la comunicación entre nodos.
+
+- **Seguridad de red**
+  - Uso de **nftables** para definir políticas de firewall claras y reproducibles.
+  - Control de acceso a servicios mediante reglas declarativas.
+
+- **Protección de la infraestructura Salt**
+  - Configuración segura del **Salt Master y los Minions**.
+  - Gestión controlada de claves de autenticación entre nodos.
+  - Automatización de configuraciones para evitar errores manuales.
+
+- **Auditoría y monitorización**
+  - Registro de eventos y logs del sistema para facilitar auditorías.
+  - Posibilidad de ampliar el proyecto con herramientas de análisis o detección de incidentes.
+
+Este enfoque permite que el laboratorio no solo sirva para aprender **automatización con SaltStack**, sino también para practicar **despliegues de infraestructura con una mentalidad orientada a la seguridad**.
+---
+
 ## Público objetivo
 
 Nos gustaría que este proyecto fuese útil para:
