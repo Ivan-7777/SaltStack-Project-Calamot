@@ -31,7 +31,7 @@ habilitar_nftables:
       - file: configurar_interfaces
 
 # Configurar nftables
-nftables_conf:
+sysctl_conf:
   file.managed:
     - name: /etc/sysctl.conf
     - source: salt://Firewall/sysctl.conf
