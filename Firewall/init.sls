@@ -30,6 +30,15 @@ habilitar_nftables:
     - require:
       - file: configurar_interfaces
 
+# Configurar nftables
+nftables_conf:
+  file.managed:
+    - name: /etc/sysctl.conf
+    - source: salt://Firewall/sysctl.conf
+    - user: root
+    - group: root
+    - mode: 600
+
 reiniciar_networking:
   cmd.run:
     - name: reboot
