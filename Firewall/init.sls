@@ -30,7 +30,7 @@ habilitar_nftables:
     - require:
       - file: configurar_interfaces
 
-# Configurar nftables
+# Configurar sysctl para habilitar el forward
 sysctl_conf:
   file.managed:
     - name: /etc/sysctl.conf
