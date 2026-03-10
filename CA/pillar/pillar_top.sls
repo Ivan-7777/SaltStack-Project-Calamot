@@ -1,6 +1,6 @@
 base:
   '*presentar02*':
     - pkica
-  'QWEN1':
+  'cambiarminombre':
     - pkica
     - webserver
