@@ -1,113 +1,287 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Configuración de servicios</title>
-  <style>
-    body { font-family: Arial; max-width: 700px; margin: auto; }
-    fieldset { margin-bottom: 20px; padding: 15px; }
-    label { display: block; margin-top: 8px; }
-  </style>
-  <script>
-    function toggleSection(service, checkbox) {
-      const section = document.getElementById(service + "-section");
-      // Mostrar u ocultar según el estado del checkbox
-      section.style.display = checkbox.checked ? "block" : "none";
-      // Habilitar/deshabilitar todos los campos de la sección
-      const inputs = section.querySelectorAll('input, select, textarea');
-      inputs.forEach(input => {
-        input.disabled = !checkbox.checked; // deshabilitado si no está checked
-      });
-    }
+<meta charset="UTF-8">
+<title>Configuración de Infraestructura</title>
+<style>
+body { font-family: Arial; max-width:900px; margin:auto; }
+fieldset { margin-bottom:20px; padding:15px; }
+label { display:block; margin-top:8px; }
+input, select { width:100%; padding:5px; margin-top:3px; }
+</style>
 
-    // Al cargar la página, deshabilitar los campos de todas las secciones ocultas
-    window.addEventListener('DOMContentLoaded', function() {
-      const sections = ['wireguard-section', 'firewall-section', 'dhcp-section'];
-      sections.forEach(id => {
-        const section = document.getElementById(id);
-        if (section && section.style.display === 'none') {
-          const inputs = section.querySelectorAll('input, select, textarea');
-          inputs.forEach(input => input.disabled = true);
+<script>
+function toggleSection(service, checkbox) {
+    const section = document.getElementById(service + "-section");
+    if (!section) return;
+    section.style.display = checkbox.checked ? "block" : "none";
+    const inputs = section.querySelectorAll("input, select, textarea");
+    inputs.forEach(i => i.disabled = !checkbox.checked);
+}
+
+window.addEventListener("DOMContentLoaded", function() {
+    const sections = ["wireguard", "firewall", "dhcp", "web", "pkica"];
+    sections.forEach(s => {
+        const section = document.getElementById(s + "-section");
+        if (section) {
+            const inputs = section.querySelectorAll("input, select, textarea");
+            inputs.forEach(i => i.disabled = true);
         }
-      });
     });
-  </script>
+});
+</script>
+
 </head>
 <body>
-<h1>Configuración de servicios</h1>
+<h1>Configuración de infraestructura</h1>
 
 <form method="POST" action="recibir.php">
 
-  <fieldset>
-    <legend>Empresa</legend>
-    <label>
-      Nombre de la empresa:
-      <input type="text" name="company" placeholder="TecnoCorp" required>
-    </label>
-  </fieldset>
+<fieldset>
+<legend>Empresa</legend>
+<label>
+Nombre empresa
+<input type="text" name="company" placeholder="Ejemplo: TecnoCorp">
+</label>
+</fieldset>
 
-  <fieldset>
-    <legend>Servicios a instalar</legend>
-    <label><input type="checkbox" name="services[]" value="wireguard" onchange="toggleSection('wireguard', this)"> WireGuard VPN</label>
-    <label><input type="checkbox" name="services[]" value="firewall" onchange="toggleSection('firewall', this)"> Firewall</label>
-    <label><input type="checkbox" name="services[]" value="dhcp" onchange="toggleSection('dhcp', this)"> DHCP</label>
-  </fieldset>
+<fieldset>
+<legend>Servicios a instalar</legend>
+<label><input type="checkbox" name="services[]" value="wireguard" onchange="toggleSection('wireguard',this)"> WireGuard VPN</label>
+<label><input type="checkbox" name="services[]" value="firewall" onchange="toggleSection('firewall',this)"> Firewall</label>
+<label><input type="checkbox" name="services[]" value="dhcp" onchange="toggleSection('dhcp',this)"> Servidor DHCP</label>
+<label><input type="checkbox" name="services[]" value="web" onchange="toggleSection('web',this)"> Web Server</label>
+<label><input type="checkbox" name="services[]" value="pkica" onchange="toggleSection('pkica',this)"> PKI CA</label>
+</fieldset>
 
-  <!-- WireGuard -->
-  <fieldset id="wireguard-section" style="display:none">
-    <legend>WireGuard VPN</legend>
-    <label>Puerto UDP: <input type="number" name="wireguard[port]" value="51820" required></label>
-    <label>IP de red VPN (ej. 10.66.66.1/24): <input type="text" name="wireguard[address]" placeholder="10.66.66.1/24" required></label>
-    <label>IP LAN del servidor VPN: <input type="text" name="wireguard[static_lan_ip]" placeholder="192.168.0.10" required></label>
-    <label>Interfaz WAN para NAT: <input type="text" name="wireguard[wan_interface]" placeholder="enp0s3" required></label>
-  </fieldset>
+<!-- WIREGUARD -->
+<fieldset id="wireguard-section" style="display:none">
+<legend>WireGuard</legend>
+<label>Puerto VPN
+<input type="number" name="wireguard[port]" placeholder="Ejemplo: 51830">
+</label>
+<label>Dirección VPN
+<input type="text" name="wireguard[address]" placeholder="Ejemplo: 10.66.66.1/24">
+</label>
+<label>IP LAN servidor VPN
+<input type="text" name="wireguard[static_lan_ip]" placeholder="Ejemplo: 192.168.0.10/24">
+</label>
+<label>Interfaz WAN
+<select name="wireguard[wan_interface]">
+<option value="">Seleccionar interfaz</option>
+<option value="enp0s3">enp0s3</option>
+<option value="enp0s8">enp0s8</option>
+<option value="enp0s9">enp0s9</option>
+</select>
+</label>
+</fieldset>
 
-  <!-- Firewall -->
-  <fieldset id="firewall-section" style="display:none">
-    <legend>Firewall</legend>
-    <h4>WAN</h4>
-    <label>IP: <input type="text" name="firewall[wan][ip]" placeholder="10.1.105.200" required></label>
-    <label>Máscara: <input type="text" name="firewall[wan][mask]" placeholder="24" required></label>
-    <label>Gateway: <input type="text" name="firewall[wan][gateway]" placeholder="10.1.105.1" required></label>
-    <label>Interfaz: <input type="text" name="firewall[wan][interface]" placeholder="enp0s3" required></label>
+<!-- FIREWALL -->
+<fieldset id="firewall-section" style="display:none">
+<legend>Firewall</legend>
+<h4>WAN</h4>
+<label>IP
+<input type="text" name="firewall[wan][ip]" placeholder="Ejemplo: 10.1.105.200">
+</label>
+<label>Máscara
+<select name="firewall[wan][mask]">
+<option value="24">24</option>
+<option value="16">16</option>
+</select>
+</label>
+<label>Gateway
+<input type="text" name="firewall[wan][gateway]" placeholder="Ejemplo: 10.1.105.1">
+</label>
+<label>Interfaz WAN
+<select name="firewall[wan][interface]">
+<option value="enp0s3">enp0s3</option>
+<option value="enp0s8">enp0s8</option>
+<option value="enp0s9">enp0s9</option>
+</select>
+</label>
 
-    <h4>LAN</h4>
-    <label>IP: <input type="text" name="firewall[lan][ip]" placeholder="192.168.0.1" required></label>
-    <label>Máscara: <input type="text" name="firewall[lan][mask]" placeholder="24" required></label>
-    <label>Interfaz: <input type="text" name="firewall[lan][interface]" placeholder="enp0s8" required></label>
+<h4>LAN</h4>
+<label>IP
+<input type="text" name="firewall[lan][ip]" placeholder="Ejemplo: 192.168.0.1">
+</label>
+<label>Máscara
+<select name="firewall[lan][mask]">
+<option value="24">24</option>
+<option value="16">16</option>
+</select>
+</label>
+<label>Interfaz LAN
+<select name="firewall[lan][interface]">
+<option value="enp0s3">enp0s3</option>
+<option value="enp0s8">enp0s8</option>
+<option value="enp0s9">enp0s9</option>
+</select>
+</label>
 
-    <h4>DMZ</h4>
-    <label>IP: <input type="text" name="firewall[dmz][ip]" placeholder="10.2.0.1" required></label>
-    <label>Máscara: <input type="text" name="firewall[dmz][mask]" placeholder="16" required></label>
-    <label>Interfaz: <input type="text" name="firewall[dmz][interface]" placeholder="enp0s9" required></label>
-  </fieldset>
+<h4>DMZ</h4>
+<label>IP
+<input type="text" name="firewall[dmz][ip]" placeholder="Ejemplo: 10.2.0.1">
+</label>
+<label>Máscara
+<select name="firewall[dmz][mask]">
+<option value="24">24</option>
+<option value="16">16</option>
+</select>
+</label>
+<label>Interfaz DMZ
+<select name="firewall[dmz][interface]">
+<option value="enp0s3">enp0s3</option>
+<option value="enp0s8">enp0s8</option>
+<option value="enp0s9">enp0s9</option>
+</select>
+</label>
+</fieldset>
 
-  <!-- DHCP -->
-  <fieldset id="dhcp-section" style="display:none">
-    <legend>DHCP</legend>
-    <label><input type="checkbox" name="dhcp[log]" value="true" checked> Activar logging</label>
+<!-- DHCP -->
+<fieldset id="dhcp-section" style="display:none">
+<legend>DHCP</legend>
+<label><input type="checkbox" name="dhcp[log]" value="true"> Activar logging</label>
 
-    <h4>LAN</h4>
-    <label>Interfaz LAN: <input type="text" name="dhcp[interfaces][lan][name]" placeholder="enp0s8" required></label>
-    <label>Rango IP inicio: <input type="text" name="dhcp[interfaces][lan][range_start]" placeholder="192.168.0.50" required></label>
-    <label>Rango IP fin: <input type="text" name="dhcp[interfaces][lan][range_end]" placeholder="192.168.3.200" required></label>
-    <label>Netmask: <input type="text" name="dhcp[interfaces][lan][netmask]" placeholder="255.255.252.0" required></label>
-    <label>Tiempo de lease: <input type="text" name="dhcp[interfaces][lan][lease_time]" placeholder="24h" required></label>
+<h4>LAN</h4>
+<label>Interfaz
+<select name="dhcp[interfaces][lan][name]">
+<option value="enp0s3">enp0s3</option>
+<option value="enp0s8">enp0s8</option>
+<option value="enp0s9">enp0s9</option>
+</select>
+</label>
+<label>IP inicio
+<input type="text" name="dhcp[interfaces][lan][range_start]" placeholder="Ejemplo: 192.168.0.50">
+</label>
+<label>IP fin
+<input type="text" name="dhcp[interfaces][lan][range_end]" placeholder="Ejemplo: 192.168.0.200">
+</label>
+<label>Netmask
+<select name="dhcp[interfaces][lan][netmask]">
+<option value="255.255.255.0">255.255.255.0</option>
+</select>
+</label>
+<label>Lease time
+<input type="text" name="dhcp[interfaces][lan][lease_time]" placeholder="Ejemplo: 24h">
+</label>
 
-    <h4>DMZ</h4>
-    <label>Interfaz DMZ: <input type="text" name="dhcp[interfaces][dmz][name]" placeholder="enp0s9" required></label>
-    <label>Rango IP inicio: <input type="text" name="dhcp[interfaces][dmz][range_start]" placeholder="192.168.1.50" required></label>
-    <label>Rango IP fin: <input type="text" name="dhcp[interfaces][dmz][range_end]" placeholder="192.168.1.200" required></label>
-    <label>Netmask: <input type="text" name="dhcp[interfaces][dmz][netmask]" placeholder="255.255.252.0" required></label>
-    <label>Tiempo de lease: <input type="text" name="dhcp[interfaces][dmz][lease_time]" placeholder="24h" required></label>
+<h4>DMZ</h4>
+<label>Interfaz
+<select name="dhcp[interfaces][dmz][name]">
+<option value="enp0s3">enp0s3</option>
+<option value="enp0s8">enp0s8</option>
+<option value="enp0s9">enp0s9</option>
+</select>
+</label>
+<label>IP inicio
+<input type="text" name="dhcp[interfaces][dmz][range_start]" placeholder="Ejemplo: 10.1.0.50">
+</label>
+<label>IP fin
+<input type="text" name="dhcp[interfaces][dmz][range_end]" placeholder="Ejemplo: 10.1.255.200">
+</label>
+<label>Netmask
+<select name="dhcp[interfaces][dmz][netmask]">
+<option value="255.255.0.0">255.255.0.0</option>
+</select>
+</label>
+<label>Lease time
+<input type="text" name="dhcp[interfaces][dmz][lease_time]" placeholder="Ejemplo: 24h">
+</label>
 
-    <h4>Opciones DHCP</h4>
-    <label>Gateways (separados por coma): <input type="text" name="dhcp[options][gateway]" placeholder="192.168.0.1,192.168.1.1" required></label>
-    <label>DNS (separados por coma): <input type="text" name="dhcp[options][dns]" placeholder="192.168.1.15" required></label>
-  </fieldset>
+<h4>Opciones</h4>
+<label>Gateways
+<input type="text" name="dhcp[options][gateway]" placeholder="Ejemplo: 192.168.0.1,10.2.0.1">
+</label>
+<label>DNS
+<input type="text" name="dhcp[options][dns]" placeholder="Ejemplo: 192.168.0.20">
+</label>
+</fieldset>
 
-  <button type="submit">Guardar configuración</button>
+<!-- WEB SERVER -->
+<fieldset id="web-section" style="display:none">
+<legend>Web Server</legend>
+<label>Dominio
+<input type="text" name="web-server[domain]" placeholder="Ejemplo: server.es">
+</label>
+<label>Webroot
+<input type="text" name="web-server[webroot]" placeholder="Ejemplo: /var/www/user/server/html">
+</label>
+<label>SSL Cert
+<input type="text" name="web-server[ssl][cert]" placeholder="Ejemplo: server.crt">
+</label>
+<label>SSL Key
+<input type="text" name="web-server[ssl][key]" placeholder="Ejemplo: server.key">
+</label>
+<label>Interfaz
+<select name="web-server[network][interface]">
+<option value="enp0s3">enp0s3</option>
+<option value="enp0s8">enp0s8</option>
+<option value="enp0s9">enp0s9</option>
+</select>
+</label>
+<label>IP
+<input type="text" name="web-server[network][address]" placeholder="Ejemplo: 192.168.0.20">
+</label>
+<label>Mask
+<select name="web-server[network][mask]">
+<option value="24">24</option>
+<option value="16">16</option>
+</select>
+</label>
+<label>Gateway
+<input type="text" name="web-server[network][gateway]" placeholder="Ejemplo: 192.168.0.1">
+</label>
+<label>DNS
+<input type="text" name="web-server[network][dns]" placeholder="Ejemplo: 192.168.0.1">
+</label>
+<label>SSH Port
+<input type="number" name="web-server[ssh][port]" placeholder="Ejemplo: 22">
+</label>
+<label>Permit root login
+<select name="web-server[ssh][permit_root_login]">
+<option value="yes">yes</option>
+<option value="no">no</option>
+</select>
+</label>
+</fieldset>
+
+<!-- PKI CA -->
+<fieldset id="pkica-section" style="display:none">
+<legend>PKI CA</legend>
+<label>Base dir
+<input type="text" name="pkica[base_dir]" placeholder="Ejemplo: /etc/pki/ca">
+</label>
+<label>Country
+<input type="text" name="pkica[ca][country]" placeholder="Ejemplo: ES">
+</label>
+<label>State
+<input type="text" name="pkica[ca][state]" placeholder="Ejemplo: Madrid">
+</label>
+<label>Locality
+<input type="text" name="pkica[ca][locality]" placeholder="Ejemplo: Madrid">
+</label>
+<label>Organization
+<input type="text" name="pkica[ca][organization]" placeholder="Ejemplo: MiOrg">
+</label>
+<label>Organizational Unit
+<input type="text" name="pkica[ca][organizational_unit]" placeholder="Ejemplo: IT">
+</label>
+<label>Common Name
+<input type="text" name="pkica[ca][common_name]" placeholder="Ejemplo: mi-ca">
+</label>
+<label>Días válidos
+<input type="number" name="pkica[ca][days_valid]" placeholder="Ejemplo: 3650">
+</label>
+<label>Key Size
+<input type="number" name="pkica[ca][key_size]" placeholder="Ejemplo: 4096">
+</label>
+<label>Digest
+<input type="text" name="pkica[ca][digest]" placeholder="Ejemplo: sha256">
+</label>
+</fieldset>
+
+<button type="submit">Guardar configuración</button>
+
 </form>
-
 </body>
 </html>
