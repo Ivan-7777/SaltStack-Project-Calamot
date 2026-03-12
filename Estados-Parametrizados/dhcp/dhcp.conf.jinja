@@ -1,0 +1,29 @@
+{% if pillar['dhcp']['log'] %}
+# Registro de DHCP activado
+log-dhcp
+{% endif %}
+
+# Interfaces y rangos DHCP
+{% for iface_name, iface in pillar['dhcp']['interfaces'].items() %}
+# Configuración para {{ iface_name }}
+interface={{ iface['name'] }}
+dhcp-range={{ iface['range_start'] }},{{ iface['range_end'] }},{{ iface['netmask'] }},{{ iface['lease_time'] }}
+
+{% endfor %}
+
+# Opciones globales: gateway y DNS
+dhcp-option=3,{% for gw in pillar['dhcp']['options']['gateway'].values() %}{{ gw }}{% if not loop.last %},{% endif %}{% endfor %}
+dhcp-option=6,{% for dns in pillar['dhcp']['options']['dns'].values() %}{{ dns }}{% if not loop.last %},{% endif %}{% endfor %}
+
+# Reservas dinámicas basadas en servicios presentes en el pilar
+{% if pillar.get('web-server') and pillar['web-server'].get('network') %}
+dhcp-host=web-server,{{ pillar['web-server']['network']['address'] }}
+{% endif %}
+
+{% if pillar.get('wireguard') and pillar['wireguard'].get('static_lan_ip') %}
+dhcp-host=vpn-server,{{ pillar['wireguard']['static_lan_ip'].split('/')[0] }}
+{% endif %}
+
+# Ejemplo de reservas comentadas
+# dhcp-host=nombre_equipo,192.168.0.10
+# dhcp-host=servidor1,192.168.0.20
