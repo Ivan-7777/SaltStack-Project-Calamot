@@ -1,0 +1,17 @@
+options {
+    directory "/var/cache/bind";
+
+    recursion {{ pillar['dns'].get('recursion','yes') }};
+    allow-query { {{ pillar['dhcp']['options']['dns'][0] }}; };
+    listen-on { {{ pillar['firewall']['lan']['ip'] }}; {{ pillar['firewall']['dmz']['ip'] }}; {{ pillar['wireguard']['address'].split('/')[0] }}; };
+    
+    forwarders {
+        {% for fw in pillar['dhcp']['options']['dns'].values() %}
+        {{ fw }};
+        {% endfor %}
+    };
+
+    dnssec-validation auto;
+    auth-nxdomain no;
+    listen-on-v6 { any; };
+};
