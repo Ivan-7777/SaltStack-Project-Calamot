@@ -12,19 +12,3 @@ La Salt API (`salt-api`) es un servicio que expone las capacidades de gestión d
 * **Autenticación eAuth (PAM):** Integración con el sistema de autenticación nativo de Linux para validar identidades.
 * **Gestión de Tokens de Sesión:** Una vez autenticado, el usuario recibe un token temporal con caducidad programada (normalmente 12h), minimizando la exposición de credenciales.
 * **Interfaz RESTful:** Compatibilidad universal con cualquier lenguaje capaz de realizar peticiones HTTP (Python, JS, Java, etc.).
-
----
-
-## Configuración del Entorno
-
-### 1. Certificados SSL
-Para garantizar el uso de HTTPS, se deben generar certificados en una ruta accesible por el servicio de Salt:
-
-```bash
-# Generación de certificado auto-firmado
-sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-  -keyout /etc/salt/pki/api/salt_api.key \
-  -out /etc/salt/pki/api/salt_api.crt \
-  -subj "/C=ES/ST=Lab/L=Gava/O=SaltProject/CN=saltmaster"
-```
-
