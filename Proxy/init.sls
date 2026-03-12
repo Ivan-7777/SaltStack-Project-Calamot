@@ -7,7 +7,7 @@ proxy_packages:
 # Configure network interfaces
 /etc/network/interfaces:
   file.managed:
-    - source: salt://proxy-inverso/interfaces
+    - source: salt://Proxyi/interfaces
     - user: root
     - group: root
     - mode: 644
@@ -15,7 +15,7 @@ proxy_packages:
 # Configure Nginx as Reverse Proxy
 /etc/nginx/nginx.conf:
   file.managed:
-    - source: salt://proxy-inverso/nginx.conf
+    - source: salt://Proxy/nginx.conf
     - user: root
     - group: root
     - mode: 644
@@ -30,7 +30,7 @@ proxy_packages:
 # Create reverse proxy configuration
 /etc/nginx/sites-available/default:
   file.managed:
-    - source: salt://proxy-inverso/default
+    - source: salt://Proxy/default
     - user: root
     - group: root
     - mode: 644
