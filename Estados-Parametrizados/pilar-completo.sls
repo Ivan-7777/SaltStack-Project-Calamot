@@ -18,6 +18,7 @@ firewall:
     mask: 16
     interface: enp0s9
 dhcp:
+  server_ip: 192.168.0.50
   log: true
   interfaces:
     lan:
