@@ -1,0 +1,24 @@
+$TTL 604800
+@   IN  SOA ns1.internal.local. admin.internal.local. (
+        2026031201 ; Serial
+        604800     ; Refresh
+        86400      ; Retry
+        2419200    ; Expire
+        604800 )   ; Negative Cache TTL
+;
+
+@   IN  NS  ns1.internal.local.
+ns1 IN  A   {{ pillar['firewall']['lan']['ip'] }}
+
+; Hosts LAN
+{% for host, ip in pillar['dhcp']['interfaces']['lan'].items() if host not in ['name','netmask','lease_time'] %}
+{{ host }} IN A {{ ip }}
+{% endfor %}
+
+; Hosts DMZ
+{% for host, ip in pillar['dhcp']['interfaces']['dmz'].items() if host not in ['name','netmask','lease_time'] %}
+{{ host }} IN A {{ ip }}
+{% endfor %}
+
+; VPN WireGuard
+wg0 IN A {{ pillar['wireguard']['address'].split('/')[0] }}
