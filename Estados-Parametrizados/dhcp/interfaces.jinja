@@ -1,0 +1,8 @@
+auto lo
+iface lo inet loopback
+
+auto {{ pillar['dhcp']['server_interface'] }}
+iface {{ pillar['dhcp']['server_interface'] }} inet static
+    address {{ pillar['dhcp']['server_ip'] }}
+    gateway {{ pillar['firewall']['lan']['ip'] }}
+    dns-nameservers {{ pillar['firewall']['dns'] }}
