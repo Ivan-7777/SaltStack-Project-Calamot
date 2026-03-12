@@ -1,5 +1,123 @@
 # Documentación de Salt REST API
 
+## Requisitos previos e instalación
+
+Antes de usar la Salt REST API, necesitas tener instalado y configurado Salt Stack con el módulo `salt-api`.
+
+### 1. Verificar instalación de Salt Master
+
+```bash
+# Verificar versión de Salt
+salt-master --version
+
+# Verificar estado del servicio
+systemctl status salt-master
+```
+
+### 2. Instalar salt-api
+
+#### Debian/Ubuntu:
+```bash
+apt update
+apt install -y salt-api
+```
+
+#### RHEL/CentOS:
+```bash
+yum install -y salt-api
+```
+
+#### Verificar instalación:
+```bash
+salt-api --version
+```
+
+### 3. Configurar autenticación (external_auth)
+
+Crear archivo de configuración en `/etc/salt/master.d/api.conf`:
+
+```bash
+mkdir -p /etc/salt/master.d
+```
+
+Contenido del archivo `/etc/salt/master.d/api.conf`:
+
+```yaml
+external_auth:
+  pam:
+    root:
+      - '.*'
+      - '@wheel'
+      - '@runner'
+      - '@jobs'
+      - '@events'
+
+netapi_enable_clients:
+  - local
+  - runner
+  - wheel
+```
+
+> **Importante:** Los módulos especiales como `@wheel`, `@runner`, `@jobs`, `@events` deben ir entre comillas simples en YAML.
+
+### 4. Configurar el backend HTTP (rest_cherrypy)
+
+Añadir al mismo archivo `/etc/salt/master.d/api.conf`:
+
+```yaml
+rest_cherrypy:
+  port: 8000
+  host: 0.0.0.0
+  debug: True
+  disable_ssl: True
+```
+
+> **Nota para producción:** En entornos productivos, habilita SSL:
+> ```yaml
+> rest_cherrypy:
+>   port: 8000
+>   ssl_crt: /etc/pki/tls/certs/localhost.crt
+>   ssl_key: /etc/pki/tls/private/localhost.key
+> ```
+
+### 5. Reiniciar servicios
+
+```bash
+# Reiniciar salt-master para aplicar configuración
+systemctl restart salt-master
+
+# Habilitar e iniciar salt-api
+systemctl enable salt-api
+systemctl start salt-api
+```
+
+### 6. Verificar que la API está funcionando
+
+```bash
+# Verificar estado del servicio
+systemctl status salt-api
+
+# Probar endpoint de login
+curl -s http://localhost:8000/login \
+  -d username=root \
+  -d password=Asdqwe123 \
+  -d eauth=pam
+```
+
+Si recibes un token en la respuesta, la API está funcionando correctamente.
+
+### 7. Verificar minions conectados
+
+```bash
+# Listar keys aceptadas
+salt-key -L
+
+# Hacer ping a todos los minions
+salt '*' test.ping
+```
+
+---
+
 ## Configuración del entorno
 
 - **URL de la API:** `http://10.1.105.56:8000`
@@ -333,55 +451,6 @@ curl -s http://10.1.105.56:8000/run \
 
 ---
 
-## 7. Ejemplos desde Python
-
-### Script básico con requests
-
-```python
-import requests
-import json
-
-BASE_URL = "http://10.1.105.56:8000"
-
-# Login
-resp = requests.post(f"{BASE_URL}/login", json={
-    "username": "root",
-    "password": "Asdqwe123",
-    "eauth": "pam"
-})
-token = resp.json()["return"][0]["token"]
-print(f"Token: {token}")
-
-# Headers para siguientes peticiones
-headers = {"X-Auth-Token": token, "Accept": "application/json"}
-
-# Ping
-resp = requests.post(f"{BASE_URL}/run", json={
-    "client": "local",
-    "tgt": "QWEN1",
-    "fun": "test.ping"
-}, headers=headers)
-print(f"Ping: {resp.json()}")
-
-# Ejecutar comando
-resp = requests.post(f"{BASE_URL}/run", json={
-    "client": "local",
-    "tgt": "QWEN1",
-    "fun": "cmd.run",
-    "arg": "whoami"
-}, headers=headers)
-print(f"Whoami: {resp.json()}")
-
-# Ejecutar estado
-resp = requests.post(f"{BASE_URL}/run", json={
-    "client": "local",
-    "tgt": "QWEN1",
-    "fun": "state.apply",
-    "arg": ["webserver"]
-}, headers=headers)
-print(f"State apply: {json.dumps(resp.json(), indent=2)}")
-```
-
 ### Clase reutilizable para Salt API
 
 ```python
@@ -654,5 +723,4 @@ curl -s http://localhost:8000/login -d username=root -d password=Asdqwe123 -d ea
 
 ---
 
-*Documento generado: 2026-03-12*
 *Versión de Salt: 3007.11*
