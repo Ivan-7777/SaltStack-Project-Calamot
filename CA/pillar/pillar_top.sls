@@ -1,6 +1,4 @@
 base:
-  '*presentar02*':
+  '*CambiarNombre*':
     - pkica
-  'cambiarminombre':
-    - pkica
-    - webserver
+
