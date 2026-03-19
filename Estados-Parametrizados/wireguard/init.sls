@@ -1,5 +1,5 @@
 # 1️⃣ Instalar WireGuard
-wireguard_packages:
+patata:
   pkg.installed:
     - pkgs:
       - wireguard-tools
@@ -36,11 +36,9 @@ wireguard_server_public_key:
   cmd.run:
     - name: wg pubkey < /etc/wireguard/keys/server_private.key > /etc/wireguard/keys/server_public.key
     - creates: /etc/wireguard/keys/server_public.key
-    - require:
-      - cmd: wireguard_server_private_key
 
 # 4️⃣ Sysctl
-wireguard_sysctl_ipforward:
+popo:
   file.managed:
     - name: /etc/sysctl.conf
     - source: salt://wireguard/files/sysctl.conf
@@ -55,8 +53,6 @@ wireguard_wg0_conf:
     - mode: 600
     - user: root
     - group: root
-    - require:
-      - cmd: wireguard_server_private_key
 
 # 6️⃣ nftables (solo masquerade)
 wireguard_nftables_conf:
@@ -68,12 +64,6 @@ wireguard_nftables_conf:
     - user: root
     - group: root
 
-wireguard_nftables_apply:
-  cmd.run:
-    - name: nft -f /etc/nftables.conf
-    - require:
-      - file: wireguard_nftables_conf
-
 # 7️⃣ Servicio WireGuard
 wireguard_service:
   service.running:
@@ -81,8 +71,6 @@ wireguard_service:
     - enable: True
     - require:
       - file: wireguard_wg0_conf
-      - cmd: wireguard_sysctl_apply
-      - cmd: wireguard_nftables_apply
 # 8️⃣ Configuración de la IP LAN del minion
 configure_lan_ip:
   file.managed:
@@ -98,6 +86,10 @@ wireguard_sysctl_ipforward:
     - name: /etc/wireguard/wireguard-cliente.sh
     - source: salt://wireguard/wireguard-cliente.sh
     - mode: 644
+
+aplicar_nftables:
+  cmd.run:
+    - name: systemctl enable nftables.conf
 
 reinicio:
   cmd.run:
