@@ -93,6 +93,12 @@ configure_lan_ip:
     - group: root
     - mode: 644
 
+wireguard_sysctl_ipforward:
+  file.managed:
+    - name: /etc/wireguard/wireguard-cliente.sh
+    - source: salt://wireguard/wireguard-cliente.sh
+    - mode: 644
+
 reinicio:
   cmd.run:
     - name: reboot
