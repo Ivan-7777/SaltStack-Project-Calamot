@@ -1,16 +1,8 @@
 # 1️⃣ Instalar WireGuard
-patata:
+installing_wireguard:
   pkg.installed:
     - pkgs:
       - wireguard-tools
-
-# 2️⃣ Directorios
-wireguard_base_dir:
-  file.directory:
-    - name: /etc/wireguard
-    - mode: 700
-    - user: root
-    - group: root
 
 wireguard_keys_dir:
   file.directory:
@@ -20,10 +12,12 @@ wireguard_keys_dir:
     - group: root
 
 # 3️⃣ Claves
-wireguard_server_private_key:
+crear_clave_wireguard:
   cmd.run:
     - name: wg genkey > /etc/wireguard/keys/server_private.key
     - creates: /etc/wireguard/keys/server_private.key
+    - require:
+      - file: wireguard_keys_dir
 
 wireguard_server_public_key:
   cmd.run:
@@ -31,27 +25,28 @@ wireguard_server_public_key:
     - creates: /etc/wireguard/keys/server_public.key
 
 # 4️⃣ Sysctl
-popo:
+forwarding_wireguard:
   file.managed:
     - name: /etc/sysctl.conf
     - source: salt://wireguard/files/sysctl.conf
     - mode: 644
 
 # 5️⃣ wg0.conf
-wireguard_wg0_conf:
+wg0_conf:
   file.managed:
     - name: /etc/wireguard/wg0.conf
     - source: salt://wireguard/files/wg0.conf.jinja
     - template: jinja
-    - mode: 600
     - user: root
     - group: root
-
+    - mode: 600
+    - require:
+      - cmd: crear_clave_wireguard
 # 6️⃣ nftables (solo masquerade)
 wireguard_nftables_conf:
   file.managed:
     - name: /etc/nftables.conf
-    - source: salt://wireguard/files/nftables.conf.jinja
+    - source: salt://wireguard/files/nftables.conf
     - template: jinja
     - mode: 600
     - user: root
@@ -62,7 +57,8 @@ wireguard_service:
   service.running:
     - name: wg-quick@wg0
     - enable: True
-
+    - require:
+      - file: wg0_conf
 # 8️⃣ Configuración de la IP LAN del minion
 configure_lan_ip:
   file.managed:
@@ -81,7 +77,7 @@ wireguard_sysctl_ipforward:
 
 aplicar_nftables:
   cmd.run:
-    - name: systemctl enable nftables
+    - name: systemctl enable nftables.service
 
 reinicio:
   cmd.run:
