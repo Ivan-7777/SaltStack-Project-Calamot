@@ -12,7 +12,7 @@ La principal mejora consiste en **dividir los pilares en múltiples archivos `.s
 Cada empresa tiene su propio directorio:
 
 
-/srv/pillar/customers/<empresa>/
+/srv/pillar/customers/empresa/
 ├── wireguard.sls
 ├── firewall.sls
 ├── dhcp.sls
