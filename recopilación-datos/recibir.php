@@ -1,121 +1,136 @@
 <?php
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    die("Metodo no permitido");
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+    die("Acceso no permitido");
 }
 
-$companyRaw = $_POST['company'] ?? "empresa";
+$empresa = trim($_POST['company'] ?? '');
 
-$companySafe = preg_replace('/[^a-zA-Z0-9_-]/','_', strtolower(trim($companyRaw)));
-
-if(empty($companySafe)){
-    die("Empresa invalida");
+if (empty($empresa)) {
+    die("Nombre de empresa inválido");
 }
+
+// Sanitizar nombre carpeta
+$empresa = preg_replace('/[^a-zA-Z0-9_-]/', '_', $empresa);
 
 $services = $_POST['services'] ?? [];
 
-$pillar = [];
+$base_dir = "/srv/pillar/customers/$empresa";
 
-$pillar['empresa'] = $companyRaw;
-
-if(in_array("wireguard",$services)){
-    $pillar['wireguard'] = $_POST['wireguard'];
+// Crear directorio si no existe
+if (!is_dir($base_dir)) {
+    mkdir($base_dir, 0755, true);
 }
 
-if(in_array("firewall",$services)){
-    $pillar['firewall'] = $_POST['firewall'];
+// Función para guardar YAML manual (evitamos yaml_emit por compatibilidad)
+function save_yaml($file, $array) {
+    $yaml = yaml_encode($array);
+    file_put_contents($file, $yaml);
 }
 
-if(in_array("dhcp",$services)){
+// Encoder simple YAML (compatible con tu estructura)
+function yaml_encode($data, $indent = 0) {
+    $yaml = '';
+    foreach ($data as $key => $value) {
+        $spaces = str_repeat("  ", $indent);
 
-    $dhcp = $_POST['dhcp'];
+        if (is_array($value)) {
+            $yaml .= "{$spaces}{$key}:\n";
+            $yaml .= yaml_encode($value, $indent + 1);
+        } else {
+            // boolean
+            if ($value === "true") $value = "true";
+            if ($value === "false") $value = "false";
 
-    $dhcp['log'] = isset($dhcp['log']);
-
-    if(!empty($_POST['dhcp']['gateway'])){
-        $dhcp['options']['gateway'] = array_map(
-            'trim',
-            explode(',',$_POST['dhcp']['gateway'])
-        );
-    }
-
-    if(!empty($_POST['dhcp']['dns'])){
-        $dhcp['options']['dns'] = array_map(
-            'trim',
-            explode(',',$_POST['dhcp']['dns'])
-        );
-    }
-
-    unset($dhcp['gateway']);
-    unset($dhcp['dns']);
-
-    $pillar['dhcp']=$dhcp;
-}
-
-if(in_array("web",$services)){
-    $pillar['web-server']=$_POST['web'];
-}
-
-if(in_array("pkica",$services)){
-    $pillar['pkica']=$_POST['pkica'];
-}
-
-
-
-function arrayToYaml($data,$indent=0){
-
-    $yaml="";
-    $prefix=str_repeat("  ",$indent);
-
-    foreach($data as $key=>$value){
-
-        if(is_array($value)){
-
-            $isList = array_keys($value)===range(0,count($value)-1);
-
-            if($isList){
-
-                $yaml.=$prefix.$key.":\n";
-
-                foreach($value as $item){
-                    $yaml.=$prefix."  - ".$item."\n";
-                }
-
-            }else{
-
-                $yaml.=$prefix.$key.":\n";
-                $yaml.=arrayToYaml($value,$indent+1);
-
-            }
-
-        }else{
-
-            if(is_bool($value)){
-                $value=$value?'true':'false';
-            }
-
-            $yaml.=$prefix.$key.": ".$value."\n";
-
+            $yaml .= "{$spaces}{$key}: {$value}\n";
         }
     }
-
     return $yaml;
 }
 
+//////////////////////////////
+// GENERACIÓN POR SERVICIO
+//////////////////////////////
 
-$yaml=arrayToYaml($pillar);
+// 🔹 WIREGUARD
+if (in_array("wireguard", $services) && isset($_POST['wireguard'])) {
 
-$directory="/srv/pillar/customers";
+    $data = [
+        "wireguard" => $_POST['wireguard']
+    ];
 
-$filepath=$directory."/".$companySafe.".sls";
-
-if(file_put_contents($filepath,$yaml)!==false){
-
-    echo "<h2>Pillar creado correctamente</h2>";
-    echo "<pre>".$yaml."</pre>";
-
-}else{
-
-    echo "Error al guardar el archivo";
-
+    save_yaml("$base_dir/wireguard.sls", $data);
 }
+
+// 🔹 FIREWALL
+if (in_array("firewall", $services) && isset($_POST['firewall'])) {
+
+    $data = [
+        "firewall" => $_POST['firewall']
+    ];
+
+    save_yaml("$base_dir/firewall.sls", $data);
+}
+
+// 🔹 DHCP
+if (in_array("dhcp", $services) && isset($_POST['dhcp'])) {
+
+    $data = [
+        "dhcp" => $_POST['dhcp']
+    ];
+
+    save_yaml("$base_dir/dhcp.sls", $data);
+}
+
+// 🔹 WEB SERVER
+if (in_array("web", $services) && isset($_POST['web-server'])) {
+
+    $data = [
+        "web-server" => $_POST['web-server']
+    ];
+
+    save_yaml("$base_dir/web-server.sls", $data);
+}
+
+// 🔹 PKI CA
+if (in_array("pkica", $services) && isset($_POST['pkica'])) {
+
+    $data = [
+        "pkica" => $_POST['pkica']
+    ];
+
+    save_yaml("$base_dir/pkica.sls", $data);
+}
+
+// 🔹 DNS
+if (in_array("dns", $services) && isset($_POST['dns'])) {
+
+    $data = [
+        "dns" => $_POST['dns']
+    ];
+
+    save_yaml("$base_dir/dns.sls", $data);
+}
+
+//////////////////////////////
+// GENERAR TOP.SLS
+//////////////////////////////
+
+$top = "base:\n  '*':\n";
+
+$map = [
+    "web" => "web-server"
+];
+
+foreach ($services as $s) {
+    $name = $map[$s] ?? $s;
+    $top .= "    - customers.$empresa.$name\n";
+}
+
+file_put_contents("$base_dir/top.sls", $top);
+
+//////////////////////////////
+
+echo "Configuración guardada correctamente para la empresa: $empresa";
+
+?>
