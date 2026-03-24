@@ -146,6 +146,14 @@ interfaces_conf:
     - mode: 644
 
 # -------------------------------
+# Enviar Readme intrucciones del servicio
+# -------------------------------
+webserver_readme:
+  file.managed:
+    - name: /Instrucciones/README.md
+    - source: salt://webserver/manual.md
+
+# -------------------------------
 # Aplicar cambios de red con reboot
 # -------------------------------
 aplicar_cambios:
