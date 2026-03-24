@@ -150,8 +150,11 @@ interfaces_conf:
 # -------------------------------
 webserver_readme:
   file.managed:
-    - name: /Instrucciones/README.md
+    - name: /Instrucciones-Webserver/README.md
     - source: salt://webserver/manual.md
+    - user: root
+    - group: root
+    - mode: 644
 
 # -------------------------------
 # Aplicar cambios de red con reboot
