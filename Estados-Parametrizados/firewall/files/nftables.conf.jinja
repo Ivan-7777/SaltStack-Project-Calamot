@@ -25,12 +25,13 @@ table inet filter {
         oifname $DMZ tcp dport $WP accept
         oifname $LAN udp dport $DNS accept
 
-        # Solo si el pillar tiene wireguard definido
         {% if pillar.get('wireguard') %}
         oifname $WAN udp dport {{ pillar['wireguard']['port'] }} accept
         {% endif %}
+        {% if pillar.get('bdd') %}
+        oifname $LAN tcp dport 3306 accept
+        {% endif %}
     }
-
     chain output {
         type filter hook output priority 0; policy drop;
         oifname $LAN udp dport $DHCP accept
@@ -40,6 +41,16 @@ table inet filter {
 }
 
 table inet nat {
+    chain prerouting {
+        type nat hook prerouting priority -100;
+	{% if pillar.get('proxy') %}
+        iifname $WAN ip daddr {{ pillar['firewall']['wan']['ip'] }} tcp dport 80 dnat to {{ pillar['proxy']['ip'] }}:{{ pillar['proxy']['puerto_customizado'] }}
+	{% endif %}
+
+	{% if pillar.get('wireguard') %}
+        iifname $WAN ip daddr {{ pillar['firewall']['wan']['ip'] }} tcp dport {{ pillar['wireguard']['port'] }} dnat to {{ pillar['wireguard']['static_lan_ip'] }}:{{ pillar['wireguard']['port'] }}
+	{% endif %}
+
     chain postrouting {
         type nat hook postrouting priority 100;
         oifname $WAN masquerade
