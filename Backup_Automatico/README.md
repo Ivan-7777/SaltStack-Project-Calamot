@@ -1,47 +1,30 @@
-# Estado: Backup y Logging
+# Estado: Backup Centralizado con Restic
 
 ## Descripción
 
-Este estado se encarga de **distribuir los scripts de backup y logging** a cada minion y de **programar la ejecución automática de backups** en la infraestructura del proyecto.  
+Este estado se encarga de **implementar un sistema de copias de seguridad centralizado** utilizando Restic, así como de **automatizar la ejecución de backups** en todos los minions de la infraestructura.
 
-Su objetivo es asegurar que **cada máquina registre su actividad y realice copias de seguridad de manera automatizada**, enviando toda la información a la base de datos central para su almacenamiento y análisis.
+Su objetivo es asegurar que **cada máquina realice copias de seguridad de forma automática**, enviándolas a un servidor central, y permitiendo su futura integración con el sistema de logging y base de datos del proyecto.
 
 ---
 
 ## Contenido
 
-### Scripts
+### Servidor de Backups
 
-- `backup_machine.sh`  
-  Script que realiza copias de seguridad de carpetas críticas (`/etc`, `/home`, `/var/www`) en cada minion y registra el resultado en la base de datos central.
-
-- `salt_db_logger.py`  
-  Script que recoge información sobre los estados de Salt ejecutados en cada minion y envía un registro a la base de datos central (`salt_state_logs`).
-
-### Programación de backups
-
-- Se crea una tarea **cron** que ejecuta `backup_machine.sh` automáticamente cada día a las 2:00 AM.
-- Permite mantener los backups actualizados sin intervención manual.
+- Se instala Restic en la máquina servidor.
+- Se crea el repositorio central en `/backups/restic`.
+- Se inicializa el repositorio con contraseña segura.
+- El servidor actúa como punto único de almacenamiento de backups.
 
 ---
 
-## Variables
+### Clientes (Minions)
 
-La configuración del estado puede variar según el entorno:
+- Se instala Restic en cada máquina cliente.
+- Se configura la conexión al servidor mediante SSH.
+- Se define el repositorio remoto:
 
-- Ruta donde se almacenan los backups en cada minion (`/backups` por defecto).
-- IP o host de la **BDD central**.
-- Usuario y contraseña de la base de datos (`saltlogger`).
-- Carpeta o archivos que se quieran incluir en el backup.
-- Hora de ejecución del cron.
-
----
-
-## Objetivo
-
-El objetivo de este estado es **automatizar los procesos de backup y logging**, permitiendo:
-
-- Registrar todos los cambios de configuración realizados por Salt en la BDD central.
 - Generar backups diarios de las máquinas críticas.
 - Centralizar la información de logs y backups de toda la infraestructura.
 - Garantizar trazabilidad y seguridad de los datos sin intervención manual.
