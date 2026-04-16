@@ -1,8 +1,3 @@
-
-init.sls  README.md  restic_backup.sh
-root@debian:/srv/salt/restic/server# nano restic_backup.sh
-root@debian:/srv/salt/restic/server# nano README.md
-  GNU nano 8.4                                README.md
 # Restic Server - Estado de SaltStack
 
 ## Descripción
