@@ -1,45 +1,112 @@
-# Estado: BDD
+# Estado: Base de Datos (MariaDB)
 
 ## Descripción
 
-Este estado se encarga de **crear y configurar la base de datos centralizada** del proyecto SaltStack en la máquina dedicada a la BDD.  
-El objetivo es que todas las máquinas (minions) puedan **enviar información de logs y backups automáticamente** a un único lugar, de manera totalmente automatizada mediante SaltStack.
+Este estado se encarga de **instalar y configurar un servidor MariaDB** que actúa como base de datos central del sistema.  
+
+Su función principal es **almacenar los registros de backups generados por los minions**, permitiendo llevar un control y trazabilidad de las copias de seguridad realizadas en la infraestructura.
 
 ---
 
 ## Contenido
 
-### Base de datos principal
-Se crea la base de datos `salt_logs` que almacenará toda la información del proyecto.
+### Instalación del servicio
 
-### Tablas
-Se crean dos tablas principales:
+- Instalación de:
+  - `mariadb-server`
+  - `mariadb-client`
+  - `python3-mysqldb` (necesario para interacción con MySQL desde Python/Salt)
 
-- `salt_state_logs`: guarda los **logs de ejecución de estados** de Salt en cada minion.
-- `machine_backups`: registra los **backups automáticos** realizados en cada máquina.
+---
 
-### Usuario y permisos
-Se crea un **usuario `saltlogger`** con permisos mínimos necesarios para que los minions puedan **insertar datos** en la base de datos sin comprometer la seguridad del servidor.
+### Configuración del servidor
+
+- Se modifica el archivo de configuración de MariaDB para permitir conexiones remotas:
+  - Cambio de `bind-address` de `127.0.0.1` a `0.0.0.0`
+- Se inicia y habilita el servicio MariaDB en el sistema
+
+---
+
+### Seguridad y autenticación
+
+- Se configura la contraseña del usuario `root`
+- Se cambia el método de autenticación por defecto (`unix_socket`) a `mysql_native_password`
+- Se aplican los privilegios correspondientes
+
+---
+
+### Base de datos
+
+- Se crea la base de datos:
+  - `salt_logs`
+
+---
+
+### Usuario de acceso
+
+- Se crea el usuario:
+  - `saltlogger`
+- Se le otorgan permisos completos sobre la base de datos `salt_logs`
+- Se permite acceso remoto (`'%'`) para que los minions puedan conectarse
+
+---
+
+### Tabla de backups
+
+Se crea la tabla:
+
+- `machine_backups`
+
+#### Estructura:
+
+- `id`: identificador único
+- `hostname`: nombre del minion
+- `backup_path`: ruta del backup o repositorio
+- `status`: estado del backup (`success` o `fail`)
+- `execution_time`: fecha de ejecución
+- `created_at`: fecha de inserción automática
+
+#### Índices:
+
+- Índice por hostname
+- Índice por estado
+- Índice por fecha de ejecución
 
 ---
 
 ## Variables
 
-La configuración puede variar según el entorno o los datos futuros que se quieran almacenar.  
-Algunos parámetros que pueden modificarse son:
+La configuración del estado depende de variables definidas en **Pillar**:
 
-- Nombre de la base de datos (`salt_logs`)
-- Nombre de usuario y contraseña (`saltlogger`)
-- Permisos asignados al usuario
-- Estructura de las tablas (campos, tipos de datos)
-- Host de la BDD que podrán usar los minions (`localhost` o `%` para conexiones remotas)
+- `mysql.root_password` → contraseña del usuario root
+- `mysql.password` → contraseña del usuario `saltlogger`
+
+Estas variables permiten:
+
+- evitar hardcodear credenciales
+- mejorar la seguridad
+- facilitar cambios en el entorno
 
 ---
 
 ## Objetivo
 
-El objetivo de este estado es **automatizar la creación y preparación de la base de datos**, dejando todo listo para que:
+El objetivo de este estado es **proporcionar una base de datos centralizada y segura** para:
 
-- Todos los minions puedan enviar sus logs de ejecución de estados.
-- Todos los minions puedan registrar sus backups automáticos.
-- Los administradores tengan un **registro centralizado y seguro** de la actividad de la infraestructura.
+- Registrar los resultados de los backups realizados por los minions
+- Mantener un histórico de ejecuciones
+- Permitir trazabilidad y auditoría del sistema
+- Facilitar futuras integraciones (monitorización, alertas, análisis)
+
+---
+
+## Resultado
+
+Tras aplicar este estado:
+
+- MariaDB queda instalado y operativo
+- La base de datos `salt_logs` está creada
+- El usuario `saltlogger` tiene acceso remoto
+- La tabla `machine_backups` está lista para almacenar datos
+
+Esto permite que los scripts de backup y otros servicios del sistema **registren automáticamente su actividad en la base de datos central**.
