@@ -90,24 +90,24 @@ restic/
 | Servidor | Mantenimiento | 02:30 |
 
 ---
-##Seguridad
-1.Backups cifrados
-2.Uso de Salt Pillar para credenciales
-3.Permisos restringidos (0600 / 0750)
-4.Acceso REST en red interna
-5.Uso de claves SSH
-6.Credenciales no expuestas en CLI
+##  Seguridad
+1. Backups cifrados
+2. Uso de Salt Pillar para credenciales
+3. Permisos restringidos (0600 / 0750)
+4. Acceso REST en red interna
+5. Uso de claves SSH
+6. Credenciales no expuestas en CLI
 
 ---
-##Ventajas
-1.Automatización completa
-2.Escalable
-3.Centralización de logs
-4.Recuperación sencilla
-5.Uso eficiente de almacenamiento
+##  Ventajas
+1. Automatización completa
+2. Escalable
+3. Centralización de logs
+4. Recuperación sencilla
+5. Uso eficiente de almacenamiento
 
 ---
-##Mejoras futuras
-1.Autenticación en REST server
-2.Alertas
-3.Backups más frecuentes
+##  Mejoras futuras
+1. Autenticación en REST server
+2. Alertas
+3. Backups más frecuentes
