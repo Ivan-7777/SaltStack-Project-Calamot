@@ -15,17 +15,17 @@ El sistema permite realizar backups deduplicados, encriptados y automatizados.
 ---
 
 ## Arquitectura
+```
 Clientes (Restic + cron)
-│
-▼
+├
 Restic REST Server
-│
-▼
+├── restic_backup.sh
 MariaDB (logs)
-
+```
 ---
 
 ## Estructura del repositorio
+```
 restic/
 ├── client/
 │ ├── init.sls
@@ -42,7 +42,7 @@ restic/
 │ └── restic_server.sls
 │
 └── README.md
-
+```
 ---
 
 ## Componentes
