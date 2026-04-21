@@ -1,24 +1,25 @@
 $TTL 604800
 @   IN  SOA ns1.{{ pillar['web-server']['domain'] }}. admin.{{ pillar['web-server']['domain'] }}. (
-        2026031201 ; Serial
+        2026041301 ; Serial
         604800     ; Refresh
         86400      ; Retry
         2419200    ; Expire
         604800 )   ; Negative Cache TTL
 ;
 
-@   IN  NS ns1.{{ pillar['web-server']['domain'] }}.
-ns1 IN  A {{ pillar['web-server']['network']['address'] }}
+@   IN  NS  ns1.{{ pillar['web-server']['domain'] }}.
+ns1 IN  A   {{ pillar['web-server']['network']['address'] }}
 
 ; Web server principal
-www IN  A {{ pillar['web-server']['network']['address'] }}
-mail IN  A {{ pillar['web-server']['network']['address'] }}
+www IN  A   {{ pillar['web-server']['network']['address'] }}
+mail IN A   {{ pillar['web-server']['network']['address'] }}
 
-; Opcional: registrar IP de la VPN como host
-vpn IN  A {{ pillar['wireguard']['address'].split('/')[0] }}
+; VPN WireGuard
+vpn IN A {{ pillar['wireguard']['address'].split('/')[0] }}
 
-; Certificados generados por la PKI
-{% if pillar['pkica'] %}
-; Esto podría usarse para registros de certificados o servicios internos
-ca IN  A {{ pillar['pkica']['files']['root_cert'] }}
+{% if pillar.get('pkica', {}).get('files', {}).get('root_cert') and pillar['pkica']['files']['root_cert'] != '/etc/pki/ca/certs/ca.cert.pem' %}
+; Certificado de la PKI (si hay IP configurada)
+ca IN A {{ pillar['pkica']['files']['root_cert'] }}
+{% else %}
+; PKI CA - sin IP asignada todavia
 {% endif %}
