@@ -5,4 +5,3 @@ auto {{ pillar['wireguard']['wan_interface'] }}
 iface {{ pillar['wireguard']['wan_interface'] }} inet static
     address {{ pillar['wireguard']['static_lan_ip'] }}
     gateway {{ pillar['firewall']['lan']['ip'] }}
-
