@@ -1,6 +1,7 @@
 # Instala Bind9
 instalar_bind9:
   pkg.installed:
+    - refresh: False
     - name: bind9
 
 # Directorio de zonas
