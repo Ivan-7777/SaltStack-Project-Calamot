@@ -1,13 +1,17 @@
-# Zona interna LAN + DMZ + VPN
+//
+// Zona interna local
+//
 zone "internal.local" {
     type master;
     file "/etc/bind/zones/db.internal";
     allow-transfer { none; };
-}
+};
 
-# Zona para web-server
+//
+// Zona del servidor web
+//
 zone "{{ pillar['web-server']['domain'] }}" {
     type master;
     file "/etc/bind/zones/db.web-server";
     allow-transfer { none; };
-}
+};
