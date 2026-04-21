@@ -4,55 +4,86 @@ define DHCP = { 67, 68 }
 define DNS = { 53 }
 define SALT = { 4505, 4506 }
 
-# Interfaces dinámicas
+# Interfaces dinÃ¡micas desde pillar
 define WAN = "{{ pillar['firewall']['wan']['interface'] }}"
 define LAN = "{{ pillar['firewall']['lan']['interface'] }}"
 define DMZ = "{{ pillar['firewall']['dmz']['interface'] }}"
 
+# IP WAN dinÃ¡mica para NAT
+define WAN_IP = "{{ pillar['firewall']['wan']['ip'] }}"
+
 table inet filter {
     chain input {
-        type filter hook input priority 0; policy drop;
-        iifname $WAN ct state established accept
+        type filter hook input priority filter; policy drop;
+        
+        # Conexiones establecidas y relacionadas (incluye respuestas del Master)
+        ct state established,related accept
+        
+        # DHCP y Salt desde LAN
         iifname $LAN udp sport $DHCP accept
         iifname $LAN tcp sport $SALT accept
+        
+        # Salt Stack: Permitir respuestas del Master desde la WAN
+        iifname $LAN tcp sport $SALT accept
+        
+        # ICMP para diagnÃ³stico
+        iifname $LAN ip protocol icmp accept
+        iifname $WAN ip protocol icmp accept
     }
 
     chain forward {
-        type filter hook forward priority 0; policy drop;
+        type filter hook forward priority filter; policy drop;
+        # Permitir trÃ¡fico establecido y relacionado
+        ct state established,related accept
+
+        # WAN: permitir todo (rutas por defecto)
         iifname $WAN accept
         oifname $WAN accept
+        
+        # LAN: solo conexiones establecidas
         oifname $LAN ct state established accept
+        
+        # DMZ: permitir acceso a web (80, 443) y SSH
         oifname $DMZ tcp dport $WP accept
+        
+        # DNS desde LAN
         oifname $LAN udp dport $DNS accept
 
-        {% if pillar.get('wireguard') %}
-        oifname $WAN udp dport {{ pillar['wireguard']['port'] }} accept
-        {% endif %}
-        {% if pillar.get('bdd') %}
+{% if pillar.get('wireguard') %}
+        # WireGuard UDP desde WAN hacia servidor VPN
+        oifname $LAN udp dport {{ pillar['wireguard']['port'] }} accept
+        # TrÃ¡fico LAN hacia red VPN
+        iifname $LAN ip daddr {{ pillar['wireguard']['address'] }} accept
+{% endif %}
+
+{% if pillar.get('bdd') %}
+        # MySQL desde LAN
         oifname $LAN tcp dport 3306 accept
-        {% endif %}
+{% endif %}
     }
+
     chain output {
-        type filter hook output priority 0; policy drop;
-        oifname $LAN udp dport $DHCP accept
-        oifname $WAN accept
-        oifname $LAN tcp dport $SALT accept
+        type filter hook output priority filter; policy accept;
+        # ICMP para diagnÃ³stico
+        ip protocol icmp accept
     }
 }
 
 table inet nat {
     chain prerouting {
-        type nat hook prerouting priority -100;
-	{% if pillar.get('proxy') %}
-        iifname $WAN ip daddr {{ pillar['firewall']['wan']['ip'] }} tcp dport 80 dnat to {{ pillar['proxy']['ip'] }}:{{ pillar['proxy']['puerto_customizado'] }}
-	{% endif %}
-
-	{% if pillar.get('wireguard') %}
-        iifname $WAN ip daddr {{ pillar['firewall']['wan']['ip'] }} tcp dport {{ pillar['wireguard']['port'] }} dnat to {{ pillar['wireguard']['static_lan_ip'] }}:{{ pillar['wireguard']['port'] }}
-	{% endif %}
+        type nat hook prerouting priority dstnat; policy accept;
+{% if pillar.get('proxy') %}
+        iifname $WAN ip daddr $WAN_IP tcp dport 80 dnat ip to {{ pillar['proxy']['ip'] }}:{{ pillar['proxy']['puerto_customizado'] }}
+{% endif %}
+{% if pillar.get('wireguard') %}
+        # Port-forward WireGuard UDP hacia servidor VPN en LAN
+        iifname $WAN ip daddr $WAN_IP udp dport {{ pillar['wireguard']['port'] }} dnat ip to {{ pillar['wireguard']['static_lan_ip'].split('/')[0] }}:{{ pillar['wireguard']['port'] }}
+{% endif %}
+    }
 
     chain postrouting {
-        type nat hook postrouting priority 100;
+        type nat hook postrouting priority srcnat; policy accept;
+        # Masquerade para trÃ¡fico saliente por WAN
         oifname $WAN masquerade
     }
 }
