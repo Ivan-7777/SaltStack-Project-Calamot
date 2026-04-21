@@ -1,4 +1,4 @@
 [Interface]
+PrivateKey = {{ salt['file.read']('/etc/wireguard/keys/server_private.key').strip() }}
 Address = {{ pillar['wireguard']['address'] }}
 ListenPort = {{ pillar['wireguard']['port'] }}
-PrivateKey = {{ salt['cmd.run']('cat /etc/wireguard/keys/server_private.key') }}
