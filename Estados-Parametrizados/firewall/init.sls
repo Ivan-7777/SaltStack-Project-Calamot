@@ -1,6 +1,6 @@
 # -------------------------------
-# Configuración de interfaces
-# -------------------------------
+# ATENCION: Este bloque cambia /etc/network/interfaces y rompe SSH
+# Solo se debe aplicar si se tiene acceso por consola o IP alternativa
 configurar_interfaces:
   file.managed:
     - name: /etc/network/interfaces
@@ -11,7 +11,12 @@ configurar_interfaces:
     - mode: 644
 
 # -------------------------------
-# Configuración de nftables
+# Configuracion de nftables
+instalar_nftables:
+  pkg.installed:
+    - name: nftables
+    - refresh: False
+
 # -------------------------------
 nftables_conf:
   file.managed:
@@ -22,26 +27,28 @@ nftables_conf:
     - group: root
     - mode: 600
 
-habilitar_nftables:
-  cmd.run:
-    - name: systemctl enable nftables.service
-    - require:
-      - file: configurar_interfaces
-
 # -------------------------------
-# Configuración de sysctl
+# Configuracion de sysctl (habilitar IP forwarding)
 # -------------------------------
 sysctl_conf:
   file.managed:
     - name: /etc/sysctl.conf
     - source: salt://firewall/sysctl.conf
 
+# OPTIMIZADO: solo ejecuta sysctl -p si el archivo sysctl.conf cambio
+aplicar_sysctl_firewall:
+  cmd.run:
+    - name: sysctl -p
+    - onchanges:
+      - file: sysctl_conf
+
 # -------------------------------
 # ISC DHCP Relay
 # -------------------------------
-instalación_relay:
+instalacion_relay:
   pkg.installed:
     - name: isc-dhcp-relay
+    - refresh: False
 
 dhcp_relay_config:
   file.managed:
@@ -52,25 +59,33 @@ dhcp_relay_config:
     - group: root
     - mode: 644
     - require:
-      - pkg: instalación_relay
+      - pkg: instalacion_relay
 
-aplicar_relay:
-  cmd.run:
-    - name: systemctl restart isc-dhcp-relay
-    - require:
+# OPTIMIZADO: service.running es idempotente, restart solo si config cambio
+isc_dhcp_relay_service:
+  service.running:
+    - name: isc-dhcp-relay
+    - refresh: False
+    - enable: True
+    - watch:
       - file: dhcp_relay_config
-
-habilitar_relay:
-  cmd.run:
-    - name: systemctl enable isc-dhcp-relay
     - require:
-      - pkg: instalación_relay
+      - pkg: instalacion_relay
 
 # -------------------------------
-# Reinicio final para aplicar cambios de red
+# OPTIMIZADO: un solo estado para enable + start/restart nftables
+# Solo reinicia si nftables.conf cambio (watch)
 # -------------------------------
-reiniciar_sistema:
-  cmd.run:
-    - name: poweroff
-    - require:
+nftables_service:
+  service.running:
+    - name: nftables
+    - enable: True
+    - watch:
+      - file: nftables_conf
+
+networking_service:
+  service.running:
+    - name: networking
+    - enable: True
+    - watch:
       - file: configurar_interfaces
