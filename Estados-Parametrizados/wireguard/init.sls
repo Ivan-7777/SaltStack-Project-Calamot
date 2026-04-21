@@ -1,6 +1,7 @@
-# 1️⃣ Instalar WireGuard
+# 1 Instalar WireGuard
 installing_wireguard:
   pkg.installed:
+    - refresh: False
     - pkgs:
       - wireguard-tools
 
@@ -11,7 +12,7 @@ wireguard_keys_dir:
     - user: root
     - group: root
 
-# 3️⃣ Claves
+# 3 Claves (solo crea si no existen - ya correcto con creates)
 crear_clave_wireguard:
   cmd.run:
     - name: wg genkey > /etc/wireguard/keys/server_private.key
@@ -24,14 +25,21 @@ wireguard_server_public_key:
     - name: wg pubkey < /etc/wireguard/keys/server_private.key > /etc/wireguard/keys/server_public.key
     - creates: /etc/wireguard/keys/server_public.key
 
-# 4️⃣ Sysctl
+# 4 Sysctl (habilitar IP forwarding)
 forwarding_wireguard:
   file.managed:
     - name: /etc/sysctl.conf
     - source: salt://wireguard/files/sysctl.conf
     - mode: 644
 
-# 5️⃣ wg0.conf
+# OPTIMIZADO: solo ejecuta sysctl -p si el archivo cambio
+aplicar_sysctl_wireguard:
+  cmd.run:
+    - name: sysctl -p
+    - onchanges:
+      - file: forwarding_wireguard
+
+# 5 wg0.conf
 wg0_conf:
   file.managed:
     - name: /etc/wireguard/wg0.conf
@@ -42,7 +50,8 @@ wg0_conf:
     - mode: 600
     - require:
       - cmd: crear_clave_wireguard
-# 6️⃣ nftables (solo masquerade)
+
+# 6 nftables (solo masquerade)
 wireguard_nftables_conf:
   file.managed:
     - name: /etc/nftables.conf
@@ -52,33 +61,30 @@ wireguard_nftables_conf:
     - user: root
     - group: root
 
-# 7️⃣ Servicio WireGuard
+# 7 Servicio WireGuard: watch sobre wg0.conf (maneja restart automaticamente)
 wireguard_service:
   service.running:
     - name: wg-quick@wg0
     - enable: True
-    - require:
+    - reload: True
+    - watch:
       - file: wg0_conf
-# 8️⃣ Configuración de la IP LAN del minion
-configure_lan_ip:
-  file.managed:
-    - name: /etc/network/interfaces
-    - source: salt://wireguard/files/interfaces.jinja
-    - template: jinja
-    - user: root
-    - group: root
-    - mode: 644
 
+# 8 Script generador de clientes
 wireguard_sysctl_ipforward:
   file.managed:
     - name: /etc/wireguard/wireguard-cliente.sh
     - source: salt://wireguard/wireguard-cliente.sh
     - mode: 644
 
-aplicar_nftables:
-  cmd.run:
-    - name: systemctl enable nftables.service
+# OPTIMIZADO: service.running en lugar de 3 cmd.run encadenados
+# Solo hace enable/start/restart si nftables.conf cambio
+nftables_wireguard_service:
+  service.running:
+    - name: nftables
+    - enable: True
+    - watch:
+      - file: wireguard_nftables_conf
 
-reinicio:
-  cmd.run:
-    - name: reboot
+# ELIMINADO: reiniciar_wireguard era duplicado de wireguard_service
+# wireguard_service ya tiene watch: [file: wg0_conf] que lo maneja
