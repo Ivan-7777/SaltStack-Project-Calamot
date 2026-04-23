@@ -1,11 +1,11 @@
 # Pillar datos para MariaDB server (MINIONBDD)
 mysql:
-  root_password: "M@r1aDB_R00t_2026!"
-  host: "192.168.0.10"
+  host: "192.168.0.5"
   port: 3306
   user: "saltlogger"
-  password: "S@ltL0gg3r_2026!"
+  password: "salt_logs"
   database: "salt_logs"
+  root_password: "Unclick2026"
 
 
 
