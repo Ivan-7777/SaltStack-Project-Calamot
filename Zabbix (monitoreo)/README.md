@@ -1,37 +1,48 @@
-# Sistema de Monitorización Infraestructura - Zabbix 7.0 LTS
+# Servidor Zabbix y Frontend Web
 
-Solución integral de monitorización profesional, automatizada y gestionada mediante **SaltStack**.
+Este componente despliega el núcleo del sistema de monitorización Zabbix y su interfaz de gestión web, optimizado para entornos Debian 13 (Trixie).
 
-## Descripción General
+## Stack Tecnológico
 
-Este proyecto implementa una infraestructura de monitorización distribuida capaz de supervisar servidores, servicios de red y eventos de backup en tiempo real. Está diseñado para ser **idempotente**, permitiendo reconstruir todo el sistema desde cero con un solo comando de Salt.
+- **Motor**: Zabbix Server 7.0 LTS (MySQL edition).
+- **Frontend**: Interfaz PHP 8.4 servida por Apache2.
+- **Base de Datos**: MariaDB remota (alojada en `192.168.0.5`).
 
-## Arquitectura del Sistema
+## Funcionalidades Clave
 
-La infraestructura se divide en tres capas principales:
+- **Provisión de Esquema**: Importación automática de los ficheros SQL iniciales (`schema`, `images`, `data`) solo en la primera instalación.
+- **Localización Completa**:
+  - Generación de locales `es_ES.UTF-8`.
+  - Configuración automática del idioma de la interfaz a **Español** mediante comandos SQL directos en la tabla `users`.
+- **Robustez del Servidor Web**:
+  - Configuración del módulo `mpm_prefork` para compatibilidad total con PHP.
+  - Reparación automática del motor PHP tras purgas o reinstalaciones de Apache.
+- **Optimización de PHP**: Ajuste de directivas críticas en `php.ini` (`max_execution_time: 300`, `post_max_size: 16M`) para cumplir con los requisitos del frontend de Zabbix.
 
-| Capa | Nodo | IP Real | Función |
-|---|---|---|---|
-| **Servidor y Frontend** | `MINIONZABBIX` | `192.168.0.4` | Cerebro del sistema e interfaz de usuario. |
-| **Base de Datos** | `MINIONBDD` | `192.168.0.5` | Almacenamiento centralizado de métricas y configuración. |
-| **Agentes** | `PRUEBA`, etc. | `192.168.0.X` | Nodos monitorizados que reportan datos. |
+## Despliegue y Uso
 
-## Puntos Fuertes de esta Implementación
+Minion objetivo: `MINIONZABBIX` (IP: `192.168.0.4`)
 
-- **Automatización Total**: Desde la creación de tablas en la base de datos hasta la configuración del idioma español en la interfaz web.
-- **Compatibilidad Debian 13**: Optimizado para las últimas versiones de PHP (8.4) y Apache.
-- **Auto-Reparación**: Incluye lógica para detectar y arreglar fallos comunes en el motor PHP de Apache tras reinstalaciones.
-- **Seguridad Estandarizada**: Gestión de credenciales centralizada en Pillar (`Unclick2026`).
-- **Integración de Backups**: Capacidad para monitorizar el estado de Restic y registrar eventos en la base de datos de logs.
+```bash
+# Aplicar el despliegue completo
+salt "MINIONZABBIX" state.apply zabbix.server
+```
 
-## Guía de Despliegue Rápido
+## Verificación del Sistema
 
-1. **Configuración**: Asegura que las IPs y contraseñas en `/srv/pillar/` sean correctas.
-2. **Base de Datos**: `salt "MINIONBDD" state.apply bdd`
-3. **Servidor Zabbix**: `salt "MINIONZABBIX" state.apply zabbix.server`
-4. **Agentes Cliente**: `salt "*" state.apply zabbix.agent`
+Tras el despliegue, puedes validar los servicios:
 
-## Acceso al Panel de Control
+```bash
+# Comprobar estado del servicio Zabbix
+salt "MINIONZABBIX" service.status zabbix-server
 
-Una vez completado el despliegue, accede a la monitorización en:
-**`http://192.168.0.4/zabbix/`**
+# Validar que Apache está sirviendo PHP correctamente
+curl -I http://192.168.0.4/zabbix/
+```
+
+Acceso web: **`http://192.168.0.4/zabbix/`** (Credenciales estándar definidas en Pillar).
+
+## Resolución de Problemas (Troubleshooting)
+
+- **Pantalla en blanco**: El estado de Salt incluye un script de reparación que reactiva el módulo PHP de Apache automáticamente.
+- **Error de conexión DB**: Verifica que la IP `192.168.0.5` sea accesible y que el usuario `zabbix` tenga permisos remotos.
