@@ -7,7 +7,6 @@ Este paquete contiene una copia preparada para mover el proyecto a otro Salt mas
 - `srv/salt/`: estados Salt que deben copiarse a `/srv/salt`.
 - `srv/pillar/`: pillar base y customers que deben copiarse a `/srv/pillar`.
 - `var/www/html/`: formulario web del Salt master.
-- `Scripts/`: scripts de comprobacion manual.
 - `extras/`: copias auxiliares del repositorio local usadas durante el desarrollo.
 - `restore_on_new_master.sh`: script para restaurar el paquete en un nuevo Salt master.
 
@@ -16,8 +15,6 @@ Este paquete contiene una copia preparada para mover el proyecto a otro Salt mas
 En el nuevo Salt master:
 
 ```bash
-unzip saltstack_portable_YYYYmmdd_HHMMSS.zip -d /root/saltstack_portable
-cd /root/saltstack_portable/saltstack_portable_YYYYmmdd_HHMMSS
 bash restore_on_new_master.sh
 salt '*' saltutil.refresh_pillar
 salt '*' test.ping
