@@ -1,0 +1,16 @@
+options {
+    directory "/var/cache/bind";
+
+    recursion {{ 'yes' if pillar['dns'].get('recursion','yes') == True else pillar['dns'].get('recursion','yes') }};
+    allow-query { {{ pillar["dns"].get("allow_query", "any") }} };
+    
+    forwarders {
+{% for fw in pillar.get('dns', {}).get('forwarders', ['8.8.8.8', '8.8.4.4']) %}
+        {{ fw }};
+{% endfor %}
+    };
+
+    dnssec-validation auto;
+    auth-nxdomain no;
+    listen-on-v6 { any; };
+};
