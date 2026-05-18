@@ -1,0 +1,41 @@
+{% if pillar['dhcp']['log'] %}
+# Registro de DHCP activado
+log-dhcp
+{% endif %}
+
+# El servidor escucha en su interfaz LAN. Las redes remotas llegan por relay.
+interface={{ pillar['dhcp'].get('server_interface', 'enp0s3') }}
+bind-interfaces
+
+# Interfaces y rangos DHCP. Cada rango tiene etiqueta propia para entregar
+# gateway/DNS correctos a LAN y DMZ.
+{% for iface_name, iface in pillar['dhcp']['interfaces'].items() %}
+{% set gateways = pillar['dhcp'].get('options', {}).get('gateway', {}) %}
+{% set dns_servers = pillar['dhcp'].get('options', {}).get('dns', {}) %}
+{% set gateway_values = gateways.values() | list %}
+{% set dns_values = dns_servers.values() | list %}
+{% set gw = gateways.get(iface_name, gateway_values[loop.index0] if gateway_values|length > loop.index0 else gateway_values[0] if gateway_values else '') %}
+{% set dns = dns_servers.get(iface_name, dns_values[loop.index0] if dns_values|length > loop.index0 else dns_values[0] if dns_values else '') %}
+# Configuración para {{ iface_name }}
+dhcp-range=set:{{ iface_name }},{{ iface['range_start'] }},{{ iface['range_end'] }},{{ iface['netmask'] }},{{ iface['lease_time'] }}
+{% if gw %}
+dhcp-option=tag:{{ iface_name }},option:router,{{ gw }}
+{% endif %}
+{% if dns %}
+dhcp-option=tag:{{ iface_name }},option:dns-server,{{ dns }}
+{% endif %}
+
+{% endfor %}
+
+# Reservas dinámicas basadas en servicios presentes en el pilar
+{% if pillar.get('web-server') and pillar['web-server'].get('network') %}
+dhcp-host=web-server,{{ pillar['web-server']['network']['address'] }}
+{% endif %}
+
+{% if pillar.get('wireguard') and pillar['wireguard'].get('static_lan_ip') %}
+#dhcp-host=vpn-server,{{ pillar['wireguard']['static_lan_ip'].split('/')[0] }}
+{% endif %}
+
+# Ejemplo de reservas comentadas
+# dhcp-host=nombre_equipo,192.168.0.10
+# dhcp-host=servidor1,192.168.0.20

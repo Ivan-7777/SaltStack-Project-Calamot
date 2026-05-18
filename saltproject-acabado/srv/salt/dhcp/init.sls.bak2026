@@ -1,0 +1,47 @@
+# Instalar dnsmasq
+instalar_dnsmasq:
+  pkg.installed:
+    - name: dnsmasq
+
+# Generar dhcp.conf desde plantilla Jinja usando pillar
+enviarconf:
+  file.managed:
+    - name: /etc/dnsmasq.conf
+    - source: salt://dhcp/dhcp.conf.jinja
+    - template: jinja
+    - user: root
+    - group: root
+    - mode: 644
+    - require:
+      - pkg: instalar_dnsmasq
+
+# ⚠️ ATENCION: Este bloque cambia /etc/network/interfaces y rompe SSH
+# Solo se debe aplicar si se tiene acceso por consola o IP alternativa
+# interfaces:
+#   file.managed:
+#     - name: /etc/network/interfaces
+#     - source: salt://dhcp/interfaces.jinja
+#     - template: jinja
+
+habilitar_dnsmasq:
+  cmd.run:
+    - name: systemctl enable dnsmasq.service
+    - require:
+      - pkg: instalar_dnsmasq
+
+# ⚠️ ATENCION: Este bloque cambia /etc/network/interfaces y rompe SSH
+# enviar_interfaces:
+#   file.managed:
+#     - name: /etc/network/interfaces
+#     - source: salt://dhcp/interfaces.jinja
+#     - template: jinja
+#     - user: root
+#     - group: root
+#     - mode: 644
+
+# Reinicio controlado: restart del servicio dnsmasq (NO reboot del sistema)
+reiniciar_dnsmasq:
+  cmd.run:
+    - name: systemctl restart dnsmasq
+    - require:
+      - file: enviarconf
