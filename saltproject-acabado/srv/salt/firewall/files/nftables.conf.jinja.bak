@@ -1,0 +1,83 @@
+#!/usr/sbin/nft -f
+define WP = { 80, 443, 22 }
+define DHCP = { 67, 68 }
+define DNS = { 53 }
+define SALT = { 4505, 4506 }
+
+# Interfaces dinámicas desde pillar
+define WAN = "{{ pillar['firewall']['wan']['interface'] }}"
+define LAN = "{{ pillar['firewall']['lan']['interface'] }}"
+define DMZ = "{{ pillar['firewall']['dmz']['interface'] }}"
+
+# IP WAN dinámica para NAT
+define WAN_IP = "{{ pillar['firewall']['wan']['ip'] }}"
+
+table inet filter {
+    chain input {
+        type filter hook input priority filter; policy drop;
+        # Conexiones establecidas desde WAN
+        iifname $WAN ct state established accept
+        # DHCP y Salt desde LAN
+        iifname $LAN udp sport $DHCP accept
+        iifname $LAN tcp sport $SALT accept
+        # SSH desde WAN (solo si se añade manualmente, NO añadir regla fija)
+        # ICMP desde LAN y WAN para diagnóstico
+        iifname $LAN ip protocol icmp accept
+        iifname $WAN ip protocol icmp accept
+    }
+
+    chain forward {
+        type filter hook forward priority filter; policy drop;
+        # WAN: permitir todo (rutas por defecto)
+        iifname $WAN accept
+        oifname $WAN accept
+        # LAN: solo conexiones establecidas
+        oifname $LAN ct state established accept
+        # DMZ: permitir acceso a web (80, 443) y SSH
+        oifname $DMZ tcp dport $WP accept
+        # DNS desde LAN
+        oifname $LAN udp dport $DNS accept
+{% if pillar.get('wireguard') %}
+        # WireGuard UDP desde WAN hacia servidor VPN
+        iifname $LAN udp dport {{ pillar['wireguard']['port'] }} accept
+        oifname $LAN udp dport {{ pillar['wireguard']['port'] }} accept
+        # Tráfico LAN hacia red VPN
+        iifname $LAN ip daddr {{ pillar['wireguard']['address'] }} accept
+{% endif %}
+{% if pillar.get('bdd') %}
+        # MySQL desde LAN
+        oifname $LAN tcp dport 3306 accept
+{% endif %}
+    }
+
+    chain output {
+        type filter hook output priority filter; policy drop;
+        # DHCP hacia LAN
+        oifname $LAN udp dport $DHCP accept
+        # Todo hacia WAN permitido
+        oifname $WAN accept
+        # Salt hacia LAN
+        oifname $LAN tcp dport $SALT accept
+        # ICMP para diagnóstico
+        ip protocol icmp accept
+    }
+}
+
+table inet nat {
+    chain prerouting {
+        type nat hook prerouting priority dstnat; policy accept;
+{% if pillar.get('proxy') %}
+        iifname $WAN ip daddr $WAN_IP tcp dport 80 dnat ip to {{ pillar['proxy']['ip'] }}:{{ pillar['proxy']['puerto_customizado'] }}
+{% endif %}
+{% if pillar.get('wireguard') %}
+        # Port-forward WireGuard UDP hacia servidor VPN en LAN
+        iifname $WAN ip daddr $WAN_IP udp dport {{ pillar['wireguard']['port'] }} dnat ip to {{ pillar['wireguard']['static_lan_ip'].split('/')[0] }}:{{ pillar['wireguard']['port'] }}
+{% endif %}
+    }
+
+    chain postrouting {
+        type nat hook postrouting priority srcnat; policy accept;
+        # Masquerade para tráfico saliente por WAN
+        oifname $WAN masquerade
+    }
+}

@@ -1,0 +1,201 @@
+#!/usr/sbin/nft -f
+
+{% set enabled = salt['pillar.get']('enabled_services', {}) %}
+{% set has_dns = enabled.get('dns', False) %}
+{% set has_dhcp = enabled.get('dhcp', False) %}
+{% set has_proxy = enabled.get('proxy', False) %}
+{% set has_dhcp_relay = has_dhcp or has_proxy %}
+{% set has_webserver = enabled.get('webserver', False) %}
+{% set has_wireguard = enabled.get('wireguard', False) %}
+{% set has_zabbix = enabled.get('zabbix', False) %}
+{% set has_restic = enabled.get('restic', False) %}
+{% set has_bdd = enabled.get('bdd', False) %}
+{% set salt_master_ip = salt['pillar.get']('network_nodes:' ~ grains['id'] ~ ':salt_master_ip', '') %}
+
+flush ruleset
+
+define WAN = "{{ pillar['firewall']['wan']['interface'] }}"
+define LAN = "{{ pillar['firewall']['lan']['interface'] }}"
+define DMZ = "{{ pillar['firewall']['dmz']['interface'] }}"
+
+define WAN_IP = "{{ pillar['firewall']['wan']['ip'] }}"
+define LAN_NET = {{ pillar['firewall']['lan']['ip'] }}/{{ pillar['firewall']['lan']['mask'] }}
+define DMZ_NET = {{ pillar['firewall']['dmz']['ip'] }}/{{ pillar['firewall']['dmz']['mask'] }}
+define LAN_GW = {{ pillar['firewall']['lan']['ip'] }}
+define DMZ_GW = {{ pillar['firewall']['dmz']['ip'] }}
+
+define SALT = { 4505, 4506 }
+define DNS = 53
+define DHCP_SERVER = 67
+define DHCP_CLIENT = 68
+define WEB = { 80, 443 }
+define SSH = 22
+define NTP = 123
+define MYSQL = 3306
+{% if has_restic %}
+define RESTIC = {{ salt['pillar.get']('restic:port', 8000) }}
+{% endif %}
+{% if has_zabbix %}
+define ZABBIX_SERVER = 10051
+define ZABBIX_AGENT = {{ salt['pillar.get']('zabbix:agent_port', 10050) }}
+{% endif %}
+
+table inet filter {
+    chain input {
+        type filter hook input priority filter; policy drop;
+
+        iifname "lo" accept
+        ct state established,related accept
+
+        # Keep Salt management alive from the Salt master without exposing SSH.
+        {% if salt_master_ip %}
+        iifname $WAN ip saddr {{ salt_master_ip }} tcp sport $SALT accept
+        iifname $WAN ip saddr {{ salt_master_ip }} tcp dport $SALT accept
+        {% endif %}
+
+        # The firewall is DNS for LAN/DMZ. Never expose DNS on WAN.
+        {% if has_dns %}
+        iifname { $LAN, $DMZ } udp dport $DNS accept
+        iifname { $LAN, $DMZ } tcp dport $DNS accept
+        {% endif %}
+
+        # DHCP relay receives client broadcasts from LAN/DMZ.
+        {% if has_dhcp_relay %}
+        iifname { $LAN, $DMZ } udp sport $DHCP_CLIENT udp dport $DHCP_SERVER accept
+        iifname $LAN ip saddr {{ salt["pillar.get"]("dhcp:server_ip", "192.168.0.10").split("/")[0] }} udp sport $DHCP_SERVER udp dport $DHCP_SERVER accept
+        {% endif %}
+
+        # Local diagnostics only from internal networks. No SSH to firewall.
+        iifname { $LAN, $DMZ } ip protocol icmp accept
+
+        # Zabbix server in LAN may poll the firewall agent.
+        {% if has_zabbix %}
+        iifname $LAN ip saddr {{ pillar['zabbix']['server_ip'] }} tcp dport $ZABBIX_AGENT accept
+        {% endif %}
+    }
+
+    chain forward {
+        type filter hook forward priority filter; policy drop;
+
+        ct state established,related accept
+
+        # The only WAN entries allowed before the hard WAN isolation drop.
+        {% if has_proxy %}
+        iifname $WAN oifname $DMZ ip daddr {{ pillar['proxy']['ip'] }} tcp dport 80 accept
+        {% elif has_webserver %}
+        iifname $WAN oifname $LAN ip daddr {{ pillar['web-server']['network']['address'] }} tcp dport 80 accept
+        {% endif %}
+        {% if has_wireguard %}
+        iifname $WAN oifname $LAN ip daddr {{ pillar['wireguard']['static_lan_ip'].split('/')[0] }} udp dport {{ pillar['wireguard']['port'] }} accept
+        {% endif %}
+
+        # WAN must never initiate any other direct traffic to LAN/DMZ.
+        iifname $WAN oifname $LAN drop
+        iifname $WAN oifname $DMZ drop
+        iifname $WAN ip daddr $LAN_NET drop
+        iifname $WAN ip daddr $DMZ_NET drop
+
+        # Salt minions in LAN/DMZ keep outbound sessions to the Salt master.
+        iifname { $LAN, $DMZ } oifname $WAN tcp dport $SALT accept
+
+        # Package updates and OS/application installs from LAN and DMZ.
+        iifname { $LAN, $DMZ } oifname $WAN tcp dport $WEB accept
+        iifname { $LAN, $DMZ } oifname $WAN udp dport $DNS accept
+        iifname { $LAN, $DMZ } oifname $WAN tcp dport $DNS accept
+        iifname { $LAN, $DMZ } oifname $WAN udp dport $NTP accept
+
+        # LAN/DMZ can test Internet reachability. LAN can also ping DMZ.
+        iifname { $LAN, $DMZ } oifname $WAN ip protocol icmp accept
+        iifname $LAN oifname $DMZ ip protocol icmp accept
+
+        # LAN can administer DMZ by SSH. DMZ cannot initiate to LAN.
+        iifname $LAN oifname $DMZ tcp dport $SSH accept
+
+        # LAN-only access to internal services if routed through firewall.
+        {% if has_zabbix %}
+        iifname $LAN oifname $LAN ip daddr {{ pillar['zabbix']['server_ip'] }} tcp dport { 80, $ZABBIX_SERVER, $ZABBIX_AGENT } accept
+        {% endif %}
+        {% if has_restic %}
+        {% if pillar['restic']['repository'].startswith('rest:http://') %}
+        iifname $LAN oifname $LAN ip daddr {{ pillar['restic']['repository'].replace('rest:http://', '').split(':')[0].rstrip('/') }} tcp dport $RESTIC accept
+        {% endif %}
+        {% endif %}
+
+        # Internal LAN services can reach the database server.
+        {% if has_bdd and (has_zabbix or has_restic or has_webserver) %}
+        iifname $LAN oifname $LAN ip daddr {{ salt['pillar.get']('mysql:host', salt['pillar.get']('zabbix:db_host', '192.168.0.10')) }} tcp dport $MYSQL accept
+        {% endif %}
+
+        # Proxy may reach only the public web server, never Zabbix/Restic/DB.
+        {% if has_proxy and has_webserver %}
+        iifname $DMZ oifname $LAN ip saddr {{ pillar['proxy']['ip'] }} ip daddr {{ pillar['web-server']['network']['address'] }} tcp dport 80 accept
+        {% endif %}
+    }
+
+    chain output {
+        type filter hook output priority filter; policy drop;
+
+        oifname "lo" accept
+        ct state established,related accept
+
+        # The firewall itself must keep Salt connectivity to the master.
+        tcp dport $SALT accept
+        {% if salt_master_ip %}
+        ip daddr {{ salt_master_ip }} tcp dport $SALT accept
+        {% endif %}
+
+        # The firewall must be able to install/update packages and resolve names.
+        tcp dport $WEB accept
+        udp dport $DNS accept
+        tcp dport $DNS accept
+        udp dport $NTP accept
+        ip protocol icmp accept
+
+        # DHCP relay/server traffic originated by the firewall.
+        {% if has_dhcp_relay %}
+        udp sport $DHCP_SERVER udp dport $DHCP_CLIENT accept
+        udp sport $DHCP_CLIENT udp dport $DHCP_SERVER accept
+        udp dport $DHCP_SERVER accept
+        udp dport $DHCP_CLIENT accept
+        {% endif %}
+
+        # Firewall as Restic client: repository and backup logging DB.
+        {% if has_restic %}
+        {% if pillar['restic']['repository'].startswith('rest:http://') %}
+        ip daddr {{ pillar['restic']['repository'].replace('rest:http://', '').split(':')[0].rstrip('/') }} tcp dport $RESTIC accept
+        {% endif %}
+        ip daddr {{ salt['pillar.get']('restic:mysql:host', salt['pillar.get']('mysql:host', '192.168.0.10')) }} tcp dport $MYSQL accept
+        {% endif %}
+
+        # Firewall as Zabbix agent.
+        {% if has_zabbix %}
+        ip daddr {{ pillar['zabbix']['server_ip'] }} tcp dport $ZABBIX_SERVER accept
+        {% endif %}
+    }
+}
+
+table inet nat {
+    chain prerouting {
+        type nat hook prerouting priority dstnat; policy drop;
+
+        {% if has_proxy %}
+        iifname $WAN tcp dport 80 dnat ip to {{ pillar['proxy']['ip'] }}:{{ pillar['proxy']['puerto_customizado'] }}
+        {% elif has_webserver %}
+        iifname $WAN tcp dport 80 dnat ip to {{ pillar['web-server']['network']['address'] }}:80
+        {% endif %}
+
+        {% if has_wireguard %}
+        iifname $WAN udp dport {{ pillar['wireguard']['port'] }} dnat ip to {{ pillar['wireguard']['static_lan_ip'].split('/')[0] }}:{{ pillar['wireguard']['port'] }}
+        {% endif %}
+
+        # NAT chains are not the security boundary; filtering is in table inet filter.
+        # Keep non-DNAT traffic moving after explicit filter-chain decisions.
+        iifname { $WAN, $LAN, $DMZ } accept
+    }
+
+    chain postrouting {
+        type nat hook postrouting priority srcnat; policy drop;
+        oifname $WAN masquerade
+        oifname { $WAN, $LAN, $DMZ } accept
+    }
+}

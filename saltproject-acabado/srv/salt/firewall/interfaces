@@ -1,0 +1,24 @@
+auto lo
+iface lo inet loopback
+
+{% if pillar[customer]['firewall'].get('wan') %}
+auto {{ pillar[customer]['firewall']['wan']['interface'] }}
+iface {{ pillar[customer]['firewall']['wan']['interface'] }} inet static
+    address {{ pillar[customer]['firewall']['wan']['ip'] }}
+    netmask {{ pillar[customer]['firewall']['wan']['mask'] }}
+    {% if pillar[customer]['firewall']['wan'].get('gateway') %}gateway {{ pillar[customer]['firewall']['wan']['gateway'] }}{% endif %}
+{% endif %}
+
+{% if pillar[customer]['firewall'].get('lan') %}
+auto {{ pillar[customer]['firewall']['lan']['interface'] }}
+iface {{ pillar[customer]['firewall']['lan']['interface'] }} inet static
+    address {{ pillar[customer]['firewall']['lan']['ip'] }}
+    netmask {{ pillar[customer]['firewall']['lan']['mask'] }}
+{% endif %}
+
+{% if pillar[customer]['firewall'].get('dmz') %}
+auto {{ pillar[customer]['firewall']['dmz']['interface'] }}
+iface {{ pillar[customer]['firewall']['dmz']['interface'] }} inet static
+    address {{ pillar[customer]['firewall']['dmz']['ip'] }}
+    netmask {{ pillar[customer]['firewall']['dmz']['mask'] }}
+{% endif %}
