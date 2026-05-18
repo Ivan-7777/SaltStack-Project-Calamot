@@ -6,8 +6,7 @@ Aqui se encuentra la entrega del Salt Master finalizado, incluyendo la maquina v
 
 - `*.ova`: maquina virtual completa del Salt Master, lista para importar en VirtualBox.
 - `*.vdi`: disco virtual del Salt Master, util si se quiere montar manualmente en una VM nueva.
-- `saltstack_portable_*.zip`: copia portable de los estados, pillars, formulario web, scripts y configuraciones necesarias para replicar el Salt Master en otra maquina.
-
+  
 ## Informacion del proyecto
 
 Este Salt Master contiene la automatizacion de despliegue one-shot mediante SaltStack. El objetivo es que, tras generar el formulario y aplicar los estados, se instalen y configuren automaticamente los servicios seleccionados.
@@ -48,16 +47,6 @@ salt '*' state.apply
 /srv/salt/Scripts
 ```
 
-## Restauracion en otro Salt Master
-
-Si no se usa la OVA/VDI y se quiere migrar solo la configuracion, usar el ZIP portable:
-
-```bash
-unzip saltstack_portable_*.zip -d /root/saltstack_portable
-cd /root/saltstack_portable/saltstack_portable_*
-bash restore_on_new_master.sh
-```
-
 Despues refrescar pillars y comprobar minions:
 
 ```bash
@@ -67,4 +56,4 @@ salt '*' test.ping
 
 ## Nota
 
-Si el nuevo entorno usa otros rangos de red o cambia la IP del Salt Master, se debe regenerar el formulario o revisar los valores de red en los pillars generados para mantener coherencia entre LAN, DMZ y WAN.
+Si el nuevo entorno usa otros rangos de red o cambia la IP del Salt Master, se debe regenerar el formulario o revisar los valores de red en los pillars generados para mantener coherencia entre LAN, D
