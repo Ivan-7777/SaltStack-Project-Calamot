@@ -1,0 +1,14 @@
+[Interface]
+PrivateKey = {{ salt['file.read']('/etc/wireguard/keys/server_private.key').strip() if salt['file.file_exists']('/etc/wireguard/keys/server_private.key') else 'REPLACE_ME' }}
+Address = {{ salt['pillar.get']('wireguard:address', '10.66.66.1/24') }}
+ListenPort = {{ salt['pillar.get']('wireguard:port', 51820) }}
+
+{% set peers = salt['pillar.get']('wireguard:peers', {}) %}
+{% for peer_name, peer_data in peers.items() %}
+{% if peer_data.get('public_key') %}
+# Peer: {{ peer_name }}
+[Peer]
+PublicKey = {{ peer_data.get('public_key') }}
+AllowedIPs = {{ peer_data.get('allowed_ips', '') }}
+{% endif %}
+{% endfor %}
